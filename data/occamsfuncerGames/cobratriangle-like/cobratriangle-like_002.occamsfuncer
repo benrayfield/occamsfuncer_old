@@ -1,0 +1,26 @@
+/* This is a sample game I'm trying to make like the NES game CobraTriangle,
+to demo occamsfuncer's ability to build and modify games in an openended way while playing them.
+It will use Op.kernel with Op.recurse for per pixel sprite-like graphics,
+and will use jsoundcard to derive all sound per wave amplitude in realtime (lower lag on linux).
+The games will become far more advanced, including MMG and RBM neuralnets and other kinds of AI.
+
+Until occamsfuncer is working, this pseudocode will help me figure out what
+syntax and behaviors I want for occamsfuncer.
+
+TODO start with the graphics, few objects on screen at once and background that tells if its water vs land etc.
+
+Do graphics first unoptimized, as func of pixel index (float64) to colorARGB (float64),
+per sprite, and an outer func that views such sprites as offset by x and y,
+and later after thats slowly working optimize it with Op.kernel
+which is a func that takes the same index param but tries to optimize.
+Such sprites could also be parts of the background image of cobratriangle
+like the few kinds of terrain and few possible angles of borders
+between land and water, which cobratriangle actually did it as
+such tiles. But I dont want to have to do it that way,
+so keep it openended flexible by the whole screen is 1 Op.kernel.
+
+Also I want to keep the number of sprites on screen low since
+I'm going to calculate their actions as all pairs.
+*/
+
+TODO
