@@ -1,5 +1,6 @@
-package occamsfuncer;
-
+/** Ben F Rayfield offers this software opensource MIT license */
+package occamsfuncer.util;
+import occamsfuncer.Funcer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,10 +20,10 @@ public class Cache{
 	private static final Map cache = new HashMap();
 	
 	static class CachedCall{
-		Funcall func;
-		Funcall param;
-		Funcall ret;
-		public CachedCall(Funcall func, Funcall param, Funcall ret){
+		Funcer func;
+		Funcer param;
+		Funcer ret;
+		public CachedCall(Funcer func, Funcer param, Funcer ret){
 			this.func = func;
 			this.param = param;
 			this.ret = ret;
@@ -34,11 +35,11 @@ public class Cache{
 	}
 	
 	/** gets cached return value if any */
-	public static Funcall get(Funcall func, Funcall param){
+	public static Funcer get(Funcer func, Funcer param){
 		throw new Error("TODO");
 	}
 	
-	public static void put(Funcall func, Funcall param, Funcall ret){
+	public static void put(Funcer func, Funcer param, Funcer ret){
 		throw new Error("TODO");
 	}
 

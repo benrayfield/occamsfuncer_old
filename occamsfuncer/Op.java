@@ -1,11 +1,28 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package occamsfuncer;
 
+import occamsfuncer.funcalls.Funcall;
+
 /** core funcs which all other funcs and datastructs are made of */
 public enum Op{
 	
-	
-	
+	/* NO THERE MUST NOT BE A nextOp OP CUZ IT WOULD MAKE IT HARDER TO MERGE
+	OPENSOURCE FORKS OF occamsfuncer WHICH DISAGREE ON THE SET OF CORE OPS.
+	I HOPE THEY STANDARDIZE TO A SMALL CORE SET, BUT THIS IS RESEARCH IN PROGRESS.
+	THERE MUST BE NO ORDER AMONG THE OPS, ONLY USE THEM IN SWITCH/IF/ELSE/ETC.
+	<br><br>
+	/** This is a universal function, similar to but more complex than iota,
+	because calling it on combos of itself can create any possible software.
+	It returns the next Op, by Enum.ordinal(), past its param.
+	If its param is itself, it returns the next op in occamsfuncer.Op.java.
+	If its param is not an op, gets L() of L()... until finds an Op
+	(cached as Funcall.leftmostOp).
+	If its a listmap, then its op is listmap (even though its optimized in
+	other java classes, it still acts like function calls if observed that way),
+	If its the last op (in occamsfuncer.Op enum), then the next op is nextOp.
+	*
+	nextOp(1),
+	*/
 	
 	
 	
@@ -229,51 +246,51 @@ public enum Op{
 	(and maybe another for optimizing Kernel).
 	I already partially wrote such Map code somewhere.
 	*/
-	map(7),
+	listmap(7),
 	
 	/** forkEdit a map. */
-	mapGet(2),
+	listmapGet(2),
 	
 	/** forkEdit a map. Returns the forkEdited map. */
 	mapPut(3),
 	
 	/** gets float64 */
-	maplistSize(1),
+	listmapSize(1),
 	
 	/** returns T if has that key, else F */
-	maplistHas(2),
+	listmapHas(2),
 	
 	/** removes a key, returns forkEdited map */
-	maplistRem(2),
+	listmapRem(2),
 	
 	/** get min key */
-	maplistMin(1),
+	listmapMin(1),
 	
 	/** get max key */
-	maplistMax(1),
+	listmapMax(1),
 	
-	/** prefix of maplist (inclusive). treemap or treelist have subranges of keys. */ 
-	maplistPreIncl(2),
+	/** prefix of listmap (inclusive). treemap or treelist have subranges of keys. */ 
+	listmapPreIncl(2),
 	
-	/** prefix of maplist (exclusive). treemap or treelist have subranges of keys. */ 
-	maplistPreExcl(2),
+	/** prefix of listmap (exclusive). treemap or treelist have subranges of keys. */ 
+	listmapPreExcl(2),
 	
-	/** suffix of maplist (inclusive). treemap or treelist have subranges of keys. */ 
-	maplistSufIncl(2),
+	/** suffix of listmap (inclusive). treemap or treelist have subranges of keys. */ 
+	listmapSufIncl(2),
 	
-	/** suffix of maplist (exclusive). treemap or treelist have subranges of keys. */ 
-	maplistSufExcl(2),
+	/** suffix of listmap (exclusive). treemap or treelist have subranges of keys. */ 
+	listmapSufExcl(2),
 	
-	/** concat 2 lists (see uflist and ufmaplist for unusual abilities
+	/** concat 2 lists (see uflist and uflistmap for unusual abilities
 	that cost log time, including concat, sublist, equals,
 	but with strange security requirements and optimization limits of them).
 	*/
 	listCat(2),
 	
-	/** by local private salt. see ufmaplistCollisionResistance WARNING */
-	maplistEquals(2),
+	/** by local private salt. see uflistmapCollisionResistance WARNING */
+	listmapEquals(2),
 	
-	TODO do I also want uflist for its log cost of concat and substring
+	/*TODO do I also want uflist for its log cost of concat and substring
 	and equals of substrings? That equals requires local secret salt
 	since its not secure against intentional attempts at collisions
 	but is secure against accidental collisions,
@@ -283,10 +300,10 @@ public enum Op{
 	in mindmap or code files.
 	
 	I want String available for map keys and concat,
-	but I want them to work like maplist of double,
+	but I want them to work like listmap of double,
 	where a certain range of doubles are viewed as chars (maybe 2^52+char?
 	TODO choose the range, or look it up in old ufnode code called charOffset).
-	I also want in general double[] to be usable as maplist,
+	I also want in general double[] to be usable as listmap,
 	except it will copy the whole thing when written
 	or fork it into smaller ranges.
 	Since map uses comparator which is any func that takes {cons b c}
@@ -294,7 +311,8 @@ public enum Op{
 	the comparator can allow arbitrary structures to represent a string
 	even if they dont have efficient dedup,
 	such as a treelist of double used as char,
-	compare it first by maplistSize then by double values.
+	compare it first by listmapSize then by double values.
+	*/
 	
 	/** like cons except theres also data at every node,
 	and if you tricar or tricdr past leafs in that forest of tricons
@@ -329,6 +347,17 @@ public enum Op{
 	*
 	triend,
 	*/
+	
+	/** ignores its param and returns an empty listmap.
+	From this and the listmap ops, can derive any forest
+	of maps, lists, and listmaps (with object and integer keys). 
+	*/
+	emptyListmap(1),
+	
+	/** ignores its param and returns the constant (float64)1.
+	From this and the other float64 ops, you can derive any float64 value.
+	*/
+	one(1),
 	
 	/** float64 plus. everything other than float64 is viewed as 0. */
 	plus(2),
@@ -369,7 +398,7 @@ public enum Op{
 	}
 	
 	/** convenience func to write Op.abc.f(...) instead of Op.abc.fc.f(...) */ 
-	public Funcall f(Funcall p, double walletLimit){
+	public Funcer f(Funcer p, double walletLimit){
 		return fc.f(p,walletLimit);
 	}
 

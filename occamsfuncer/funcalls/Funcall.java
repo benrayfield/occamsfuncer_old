@@ -1,5 +1,12 @@
 /** Ben F Rayfield offers this software opensource MIT license */
-package occamsfuncer;
+package occamsfuncer.funcalls;
+import occamsfuncer.Funcer;
+import occamsfuncer.Op;
+import occamsfuncer.Wallet;
+import occamsfuncer.listmaps.EmptyListmap;
+import occamsfuncer.util.Cache;
+import occamsfuncer.util.Const;
+import occamsfuncer.util.Err;
 
 /** (incomplete) pure functions for number crunching AI research and MMG games
 where millions of people can build things together in realtime gaming-low-lag
@@ -10,7 +17,7 @@ Immutable. Every object at VM level is either a funcall (of func/left and param/
 or a leaf symbol or float64.
 I'm undecided if I'll use the float64 form of the leafs or if they'll be something else.
 <br><br>
-------moved here from VM.java since its all going to be done in Funcall.java----
+------moved here from VM.java since its all going to be done in Funcer.java----
 This is the next step in iotavm, binufnode, foundationOfMath research.
 It will be a project on github etc, used for numbercrunching and realtime
 puzzlegames and audivolv-like music tools etc.
@@ -31,7 +38,7 @@ ops small.
 include getmemcomleft op(from above, one num of money), and callwithlimit num
 funcparam op. use java stack.
 */
-public final class Funcall{
+public final class Funcall implements Funcer{
 	
 	
 	/*TODO int to count curries observed (not needed)
@@ -42,12 +49,12 @@ public final class Funcall{
 	
 	
 	
-	public final Funcall func;
+	public final Funcer func;
 	
-	public final Funcall param;
+	public final Funcer param;
 	
 	/* replaced by curries and leftmostOp field.
-	/** is this immutable Funcall a RETURN else a LAZYEVAL. *
+	/** is this immutable Funcer a RETURN else a LAZYEVAL. *
 	public final boolean isRet;
 	*/
 	
@@ -75,7 +82,7 @@ public final class Funcall{
 	public final Object data;
 	
 	/** This is one of the Leaf int types such as Leafs.s or Leafs.plus.
-	TODO use this instead of the Leaf class. It will be just 1 Funcall class, no subclasses.
+	TODO use this instead of the Leaf class. It will be just 1 Funcer class, no subclasses.
 	Will use this plus at least 1 more thing, one that means is a funcall of 2 things intead of leafs.
 	*
 	public final int switchInt;
@@ -83,13 +90,13 @@ public final class Funcall{
 	public final Op op;
 	*/
 	
-	/** optimization of: Funcall f = this; while(!f.isLeaf()) f = f.func; return Op of that Funcall. */
+	/** optimization of: Funcer f = this; while(!f.isLeaf()) f = f.func; return Op of that Funcer. */
 	public final Op leftmostOp;
 	
 	/** how deep is leftmostOp. Example: {{{s x} y} z} is depth 3. Example: {s x} is depth 1. */
 	public final int curries;
 	
-	public Funcall(Funcall func, Funcall param, Object data, Op leftmostOp, int curries){
+	public Funcall(Funcer func, Funcer param, Object data, Op leftmostOp, int curries){
 		this.func = func;
 		this.param = param;
 		this.data = data;
@@ -99,19 +106,19 @@ public final class Funcall{
 		this.curries = curries;
 	}
 	
-	/** used in f(Funcall,double) to curry 1 more param */
-	public Funcall(Funcall func, Funcall param){
-		this(func, param, null, func.leftmostOp, func.curries+1);
+	/** used in f(Funcer,double) to curry 1 more param */
+	public Funcall(Funcer func, Funcer param){
+		this(func, param, null, func.leftmostOp(), func.curries()+1);
 	}
 	
 	/** func/L if nonleaf. L of leaf is identityFunc, and R of leaf is itself, so {L() R()} returns the leaf. */
-	public Funcall l(){
+	public Funcer l(){
 		return func!=null ? func : Op.i.fc;
 		//FIXME identityFunc is {{SK}K} and should be in a static final var somewhere.
 	}
 	
 	/** param/R if nonleaf. L of leaf is identityFunc, and R of leaf is itself, so {L() R()} returns the leaf. */
-	public Funcall r(){
+	public Funcer r(){
 		return param!=null ? param : this;
 	}
 	
@@ -137,7 +144,7 @@ public final class Funcall{
 	
 	"TODO use java stack, and make sure to implement the wallet and spend ops first"
 	
-	//TODO choose for Funcall to have the eval func in it vs VM, and make sure
+	//TODO choose for Funcer to have the eval func in it vs VM, and make sure
 	
 	
 	FIXME double maxSpend is correct parameter for user level code,
@@ -150,19 +157,15 @@ public final class Funcall{
 	/*FIXME rename Leafs to Op since not all of them are leafs anymore.
 	*/
 	
-	public Funcall f(Funcall p, double walletLimit, Funcall ifFail){
-	//public Funcall f(Funcall p, double maxSpend, Funcall ifFail){
-		Funcall ret = f(p, walletLimit);
-		return ret!=null ? ret : ifFail;
-	}
-	
 	/** call this func on a param with a Leaf.spend second param,
 	except that if it fails by not having enough Leaf.wallet, it returns null,
 	compared to Leaf.spend which will have an extra param of what to return in that case.
 	Spending is counted (FIXME or is it subtracted) in Wallet.wallet static var.
+	
+	Much of this is in https://en.wikipedia.org/wiki/Church_encoding etc.
 	*/
-	public Funcall f(Funcall p, double walletLimit){
-	//public Funcall f(Funcall p, double maxSpend){
+	public Funcer f(Funcer p, double walletLimit){
+	//public Funcer f(Funcer p, double maxSpend){
 		
 		/*FIXME should p include self?
 		oneDiv uses 1./p.r().d() instead of 1./p.d().
@@ -172,8 +175,8 @@ public final class Funcall{
 		This will need to be fixed in many of the switch cases below
 		which assumed p is {this p}.
 		*/
-		Funcall L = this;
-		Funcall R = p;
+		Funcer L = this;
+		Funcer R = p;
 		
 		if(!Wallet.spend(1)){ //Every action costs at least 1, proves no infinite loops
 			return null;
@@ -187,7 +190,7 @@ public final class Funcall{
 			return new Funcall(this,p); //curry 1 more
 		}
 		
-		Funcall ret = Cache.get(this,p);
+		Funcer ret = Cache.get(this,p);
 		if(ret != null) return ret;
 		
 		if(leftmostOp.waitCurries < curries){
@@ -197,35 +200,39 @@ public final class Funcall{
 		
 		switch(leftmostOp){
 		case wallet:
-			//FIXME Wait this depends on how many curries.
-			//{wallet x} ignores x and returns Wallet.wallet
-			return wrap(Wallet.wallet); //dont cache cuz Wallet is stateful
+			//{wallet x} ignores x and returns amount of wallet available here
+			return wrap(Wallet.wallet-walletLimit); //dont cache cuz Wallet is stateful
 		case spend:
-			//{spend returnThisIfFail maxSpend func param}
+			//{{{{spend returnThisIfFail} maxSpend} func} param}
 			//returns what {func param} returns else returnThisIfFail
-			//L=this={{{spend returnThisIfFail} maxSpend} func}
-			//TODO rewrite these comments cuz used p instead of {this p}
-			Funcall LL = L.l(); //{{spend returnThisIfFail} maxSpend}
-			Funcall func = L.r();
-			Funcall param = R;
+			Funcer func = L.r();
+			Funcer param = R;
 			ret = Cache.get(func, param);
 			if(ret != null){
 				return ret;
 			}else{
+				Funcer LL = L.l(); //{{spend returnThisIfFail} maxSpend}
 				double maxSpend = LL.r().d();
-				ret = func.f(param, Wallet.wallet-maxSpend);
-				if(ret == null){
-					return LL.l().r(); //returnThisIfFail, since at user level theres no java-null
-					//dont cache, cuz it failed
+				double newWalletLimit = Wallet.wallet-maxSpend;
+				ret = func.f(param, Math.max(newWalletLimit,walletLimit));
+				if(ret.isErrWal()){
+					return LL.l().r();
+					//returnThisIfFail, since at user level theres no java-null or error objects
+					//dont cache, cuz it failed but could succeed again with more wallet,
+					//or in rare cases could succeed again with less wallet cuz you can just
+					//check the wallet and act nondeterministicly based on it.
 				}
 			}
-		break; case l: //left at VM level is in funcalls, not conses
+			break;
+		case l: //left at VM level is in funcalls, not conses
 			//{l x} returns the func in {func param} which evals to (anything equal to) x
 			ret = R.l(); //cache, cuz could be long chain of l and r
-		break; case r: //left at VM level is in funcalls, not conses
+			break;
+		case r: //left at VM level is in funcalls, not conses
 			//{r x} returns the param in {func param} which evals to (anything equal to) x
 			ret = R.r(); //cache, cuz could be long chain of l and r
-		break; case t: //t/true aka k
+			break;
+		case t: //t/true aka k
 			//{{t x} y} returns x
 			return L.r(); //dont cache, cuz is so simple
 		case f: //f/false
@@ -233,22 +240,25 @@ public final class Funcall{
 			return R; //dont cache, cuz is so simple
 		case s:
 			//{{{s x}y}z} returns eval of {{x z}{y z}}
-			LL = L.l();
-			Funcall x = LL.r();
-			Funcall y = L.r();
-			Funcall z = R;
-			Funcall xz = x.f(z,walletLimit);
-			if(xz == null){
-				ret = null; //check for nulls in case it fails
+			Funcer LL = L.l();
+			Funcer x = LL.r();
+			Funcer y = L.r();
+			Funcer z = R;
+			Funcer xz = x.f(z,walletLimit);
+			if(xz.isErrWal()){
+				return xz;
 			}else{
-				Funcall yz = y.f(z,walletLimit);
-				if(yz == null){
-					ret = null;
+				Funcer yz = y.f(z,walletLimit);
+				if(yz.isErrWal()){
+					return yz;
 				}else{
-					ret = xz.f(yz,walletLimit); //{{xz}{yz}}, null if it failed
+					Funcer xzyz = xz.f(yz,walletLimit); //{{xz}{yz}}, null if it failed
+					if(xzyz.isErrWal()) return xzyz;
+					ret = xzyz; //cache
 				}
 			}
-		break; case i: //identityFunc
+			break;
+		case i: //identityFunc
 			//{i x} returns x
 			return R; //dont cache, cuz is so simple
 		case obWeakEquals:
@@ -256,7 +266,8 @@ public final class Funcall{
 			x = L.r();
 			y = R;
 			ret = wrap(x==y);
-		break; case floatEquals:
+			break;
+		case floatEquals:
 			//{{floatEquals x} y} returns x.d()==y.d(), but remember that nondoubles all eval to 0
 			return wrap(L.r().d()==R.d()); //dont cache, cuz is so simple
 		case lt:
@@ -264,33 +275,40 @@ public final class Funcall{
 			return wrap(L.r().d()<R.d()); //dont cache, cuz is so simple
 		case plus:
 			ret = wrap(L.r().d()+R.d());
-		break; case oneDiv:
+			break;
+		case oneDiv:
 			ret = wrap(1./R.d());
-		break; case isFloat:
+			break;
+		case isFloat:
 			//{isFloat x} returns t or f
 			ret = wrap(R.isFloat());
-		break; case recurse:
+			break;
+		case recurse:
 			//Lx.Ly.x(cons x y)
 			//{{recurse x} y} returns eval of {x {{cons x} y}}
+			
+			//TODO optimize since cons of 2 params could be proven not to have error.
+			
 			x = L.r();
 			y = R;
-			Funcall consX = Op.cons.f(x,walletLimit);
-			if(consX == null){
-				return null; //dont cache, cuz failed
+			Funcer consX = Op.cons.f(x,walletLimit);
+			if(consX.isErrWal()){
+				return consX;
 			}else{
-				Funcall consXY = consX.f(y,walletLimit);
-				if(consXY == null){
-					return null; //dont cache, cuz failed
+				Funcer consXY = consX.f(y,walletLimit);
+				if(consXY.isErrWal()){
+					return consXY;
 				}else{
-					Funcall xConsXY = x.f(consXY, walletLimit);
-					if(xConsXY == null){
-						return null; //dont cache, cuz failed
+					Funcer xConsXY = x.f(consXY, walletLimit);
+					if(xConsXY.isErrWal()){
+						return xConsXY;
 					}else{
-						ret = xConsXY;
+						ret = xConsXY; //cache
 					}
 				}
 			}
-		break; case kernel:
+			break;
+		case kernel:
 			/*This is where the extreme optimization happens (opencl, javassist, etc).
 			 
 			Op.kernel says QUOTE Curries so kernel works the same as
@@ -306,18 +324,174 @@ public final class Funcall{
 			UNQUOTE.
 			*/
 			throw new Error("TODO call OpenclUtil, Javassist, beanshell, etc, in sandboxed way");
+		case cons:
+			//Lx.Ly.Lz.zxy. Its optimized to not call cons when cons is param of car* or cdr*,
+			//but since it was called, do it the slow way.
+			//{{{cons x} y} z} returns eval of {{z x} y}, as in https://en.wikipedia.org/wiki/Church_encoding
+			x = L.l().r();
+			y = L.r();
+			z = R;
+			Funcer zx = z.f(x,walletLimit);
+			if(zx.isErrWal()) return zx;
+			Funcer zxy = zx.f(y,walletLimit);
+			if(zxy.isErrWal()) return zxy;
+			ret = zxy; //cache
+			break;
+		case car:
+			//FIXME whats the exact lambda form of car and cdr, for if its param is not a cons?
+			throw new Error("TODO");
+		case cdr:
+			//FIXME whats the exact lambda form of car and cdr, for if its param is not a cons?
+			throw new Error("TODO");
+		case carElseL:
+			//FIXME whats the exact lambda form of car and cdr, for if its param is not a cons?
+			throw new Error("TODO");
+		case cdrElseR:
+			//FIXME whats the exact lambda form of car and cdr, for if its param is not a cons?
+			throw new Error("TODO");
+		case emptyListmap:
+			return EmptyListmap.instance;
+		case exp:
+			ret = wrap(Math.exp(R.d()));
+			break;
+		case listCat:
+			//FIXME does this cost log or log squared? Already paid 1 before the switch,
+			//but should it compute this cost at runtime? Or should it estimate it as some constant?
+			if(!Wallet.spend(100)) return Err.wal;
+			ret = L.cat(R);
+			break;
+		case listmap:
+			throw new Error("TODO");
+		case listmapEquals:
+			throw new Error("TODO");
+		case listmapGet:
+			if(!Wallet.spend(10)) return Err.wal;
+			//TODO does this return Funcer or double? L.r().get(R);
+			throw new Error("TODO");
+		case listmapHas:
+			throw new Error("TODO");
+		case listmapMax:
+			return R.maxKey();
+		case listmapMin:
+			throw new Error("TODO");
+		case listmapPreExcl:
+			throw new Error("TODO");
+		case listmapPreIncl:
+			throw new Error("TODO");
+		case listmapRem:
+			throw new Error("TODO");
+		case listmapSize:
+			throw new Error("TODO");
+		case listmapSufExcl:
+			throw new Error("TODO");
+		case listmapSufIncl:
+			throw new Error("TODO");
+		case log:
+			ret = wrap(Math.log(R.d()));
+			break;
+		case mapPut:
+			throw new Error("TODO");
+		case mult:
+			ret = wrap(L.r().d()*R.d());
+			break;
+		case neg:
+			ret = wrap(-R.d());
+			break;
+		case one:
+			return Const.one;
 		}
 		
 		if(ret != null) Cache.put(L, R, ret);
 		return ret; //returning null means wallet didnt spend enough
 	}
 	
-	public static Funcall wrap(double d){
+	public static Funcer wrap(double d){
 		return new Funcall(null, null, d, Op.i, Integer.MAX_VALUE);
 	}
 	
-	public static Funcall wrap(boolean b){
+	public static Funcer wrap(boolean b){
 		return b ? Op.t.fc : Op.f.fc;
+	}
+
+	public boolean isErr(){
+		return false;
+	}
+
+	public boolean isErrWal(){
+		return false;
+	}
+
+	public boolean isErrGet(){
+		return false;
+	}
+
+	/** 0 cuz not a listmap */
+	public long size(){
+		return 0;
+	}
+
+	/** Err.get cuz not a listmap */
+	public Object lowKey(){
+		return Err.get;
+	}
+
+	/** Err.get cuz not a listmap */
+	public Object highKey(){
+		return Err.get;
+	}
+
+	/** Err.get cuz not a listmap */
+	public Object get(Object key){
+		return Err.get;
+	}
+
+	/** acts like an empty listmap */
+	public Funcer put(Object key, Object val){
+		return EmptyListmap.instance.put(key,val);
+	}
+
+	public Funcer rem(Object key){
+		return this;
+	}
+
+	public Funcer cat(Funcer list){
+		return list;
+	}
+
+	public Funcer preI(Object key){
+		return EmptyListmap.instance;
+	}
+
+	public Funcer preE(Object key){
+		return EmptyListmap.instance;
+	}
+
+	public Funcer sufI(Object key){
+		return EmptyListmap.instance;
+	}
+
+	public Funcer sufE(Object key){
+		return EmptyListmap.instance;
+	}
+
+	public boolean equalsForest(Funcer m){
+		throw new Error("TODO");
+	}
+
+	public Op leftmostOp(){
+		return leftmostOp;
+	}
+
+	public int curries(){
+		return curries;
+	}
+
+	public Funcer minKey(){
+		return Err.get;
+	}
+
+	public Funcer maxKey(){
+		return Err.get;
 	}
 
 }
