@@ -1,0 +1,56 @@
+/(
+	Comments go in either '...' with string syntax or /() which doesnt allow unbalanced parens.
+	Comments and #names are stored in separate maps.
+	"abc def" or ;abc (single token only after ;) are strings and are of the function.
+	/(a comment)f(3 "abc" 4#nameOfFour 5 nameOfFour)#aName
+	f(? "plus" 3 4) returns 7.
+	f(f(? "plus")#+ 3 f(+ 2 2)) returns 7. You normally #name the core ops the first time they're used.
+	Since this is just a comment and they will be imported elsewhere, I wont import everything I use in explaining these basics,
+	but you should look at the actual code to learn that.
+	Even if someone else names them differently, they have the same id.
+	'map'
+	m(key val key val...) is a map.
+	a(...) is an array or treelist whose leafs can be contents of arrays, or any object as a single item (even if its an array). This is for all primitive types and the Funcer type (general object) as 1d list. Even though the leaf datastruct supports 0-15 dimensional arrays of hyperrectangle (not triangle array for example) dims by multiformats_varint size per dimension (including the first dimension is number of bits of the scalar, unsignedInteger, signedInteger, generalText, semanticText(such as url or contentType or make up your own semantic), etc)
+	'linked list'
+	l(items in a linkedlist made of consPairs and ending with nil)
+	's curry list'
+	s(b c d) means s(s(b c) d) means f(s f(s b c) d) means f(f(s f(f(s b) c)) d).
+	,xyz means f(k xyz).
+	s(,+ s(,* ,3 identityFunc) ,4) is a function that returns 3*param+4.
+	$5ab45456bab45456bab45456bab45456 ($ then 32 base64 digits) is a 192 bit id of any occamsfuncer object and can be in code instead of the expanded view of that branch. It has no effect other than the view and that (depending on the occamsfuncerVM) you might not have to load the object right away.
+	
+	TODO IS THIS CONSISTENT DESIGN? I WANT IT FOR GETDEEP AND PUTDEEP OPS:[
+		's linked list'
+		S(b c d) means 'TODO finish this example' some structure of s(...) that generates a linkedlist of what these 3 return f(b param) f(c param) f(d param) when called on the param of S(b c d).
+		Example: s(,put )
+	]
+	
+)
+f(
+	f(? "ignoredataFuncParam")#igfp
+	l(
+		f(? "plus")#+
+		f(? "multiply")#*
+		f(? "negate")#-
+		f(? "Lx.Ly.Lz.xz(yz)")#s
+		f(? "Lx.Ly.x")#k
+	)
+	/(
+		TODO recurrentNeuralNet (rnn) code goes here, takes a map containing rnn, input, etc, and returns the next state of that map.
+		This is not a lstm. I'll do that later. This is rnn as a proofOfConcept of occamsfuncer since its never done anything that advanced and I need to work out the details of optimizations as in occamsfuncerDesign2019-4-14.
+		First, I should choose an example of such a map and write it here...
+		m(
+			'1d array used as 2d'
+			;weights
+			a(...)
+			'1d array used as 2d'
+			;inputs
+			a(...)
+			
+			FIXME do I want getdeep and putdeep ops so can have 0-15 dimensional arrays instead of having to be 1d used as more-d?
+		)
+	)
+	s(
+		TODO
+	)
+)

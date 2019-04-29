@@ -1,4 +1,4 @@
-Original software 2018-12+ is copyright Ben F Rayfield, not to imply that on whats added in forks.
+Original software is copyright Ben F Rayfield, not to imply that on whats added in forks.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

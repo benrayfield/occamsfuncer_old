@@ -1,0 +1,171 @@
+/(
+	This is a map of string to func, where I will put a variety of funcs I want to experiment with or find useful. They dont see the map of string to func unless you pass it into them, and many wont expect that.
+)
+m(
+	;imports
+	l(
+		f(? "plus")#+
+		f(? "multiply")#*
+		f(? "negate")#-
+		f(? "ABC$$ac$bc")#s
+		f(? "ABa")#k
+		f(? "ABC$$cab")#cons
+	)
+	
+	:listOfExampleRnnStates
+	l(
+		m(
+			;sizeNodes
+			200
+			'1d array used as 2d, ;sizeNodes by ;sizeNodes'
+			;weights
+			v(...)
+			'1d array used as 2d, ;sizeInputs by ;sizeNodes'
+			;inputs
+			v(...)
+		)
+	)
+
+	;rnnForwardBatch
+	f(
+		"TODO"
+	)
+	
+	;rnnLearnBatch
+	'func of map to map'
+	f(
+		"TODO"
+	)
+	
+	;lstmForwardBatch
+	f(
+		"TODO"
+	)
+	
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/(
+	/(
+		Occamsfuncer is a stateless/immutable system where no object can see outside itself but can workaround that by passing in pointer to itself or other things which are then childs of another object that can see them all, and execution proceeds by building more combos of objects that way and other times optimized by java stack, opencl, etc, which you can use such runtime generated code in debuggers (such as Eclipse or Netbeans) and it will look similar to the code it was generated from, but usually you just use it as funcer takes a funcer param and returns a funcer. For example, a funcer which returns a map (which is a funcer of key to value) containing an int[] for pixels (or double[] cast to ints, etc) and ;width key, and height is size of the int divided by width. TODO The kernel1f op will help with such parallel tasks, and theres other optimizations.
+
+		Comments go in either '...' with string syntax or /() which doesnt allow unbalanced parens.
+		Comments and #names are stored in separate maps.
+		"abc def" or ;abc (single token only after ;) are strings and are of the function.
+		/(a comment)f(3 "abc" 4#nameOfFour 5 nameOfFour)#aName
+		f(? "plus" 3 4) returns 7.
+		f(f(? "plus")#+ 3 f(+ 2 2)) returns 7. You normally #name the core ops the first time they're used.
+		Since this is just a comment and they will be imported elsewhere, I wont import everything I use in explaining these basics,
+		but you should look at the actual code to learn that.
+		Even if someone else names them differently, they have the same id.
+		'map'
+		m(key val key val...) is a map.
+		A map can have any object as key or value since keys are by 192 bit id that triggers lazyEval of the id, since most objects never get an id (which is by content, not stateful). That is only slow the first use of a key and after that the keys id is cached so you only pay for comparing 3 longs about log(map size) times (and creation of log objects if put, but no new objects if get) and pay for the overhead of objects in general.
+		a(...) is an array or treelist whose leafs can be contents of arrays, or any object as a single item (even if its an array). This is for all primitive types and the Funcer type (general object) as 1d list. Even though the leaf datastruct supports 0-15 dimensional arrays of hyperrectangle (not triangle array for example) dims by multiformats_varint size per dimension (including the first dimension is number of bits of the scalar, unsignedInteger, signedInteger, generalText, semanticText(such as url or contentType or make up your own semantic), etc)
+		'linked list'
+		l(items in a linkedlist made of consPairs and ending with nil)
+		's curry list'
+		s(b c d) means s(s(b c) d) means f(s f(s b c) d) means f(f(s f(f(s b) c)) d).
+		,xyz means f(k xyz).
+		s(,+ s(,* ,3 identityFunc) ,4) is a function that returns 3*param+4.
+		$5ab45456bab45456bab45456bab45456 ($ then 32 base64 digits) is a 192 bit id of any occamsfuncer object and can be in code instead of the expanded view of that branch. It has no effect other than the view and that (depending on the occamsfuncerVM) you might not have to load the object right away.
+		Even though you can import f(? "ABC$$ac$bc")#s or f(? "ABC$$ac$bc")#theSLambda, that doesnt affect the s(...) syntax. The single chars that go before lparen exist before any f(? "import some func statelessly").
+		
+		(TODO S cant be sLinkedList cuz must be lowercase letter for any tree type such as treelistandorarray and treemap)
+		m( ... M(...) ... ) or l( L(...) L( L(...) L(...))  ) where the capital letters are internal nodes of those treemaps/treelists/etc, which you can write as just m(...) and l(...) with or without, or with only some parts, of the inner nodes.
+		
+		UPDATE THERES ONLY 1 AND 2 DIMENSIONAL ARRAYS, 1 BEING JUST A PRIMITIVE OR ID AS AN ARRAY OF BITS, AND 2 BEING AN ARRAY OF THOSE. MUST STORE SIZE INFO SOMEWHERE ELSE, CUZ ITS TOO HARD TO OPTIMIZE MORE DIMS:
+		/(
+			FIXME do I want getdeep and putdeep ops so can have 0-15 dimensional arrays instead of having to be 1d used as more-d?
+			a(where do the sizes go? ...)
+			ndim datastruct? Since all code would be occamsfuncer, instead of including strings of java code in occamsfuncer, its not a problem for Humans to see it as ndim instead of 1d, like it was a problem in java code such as x.v[x.o+x.m[0]*i+x.m[1]*j] or more efficiently to add x.m[0] and x.m[1] to an offset var in a double loop, or however deep of loops you have up to 15 dims.
+		)
+		
+		TODO IS THIS CONSISTENT DESIGN? I WANT IT FOR GETDEEP AND PUTDEEP OPS:[
+			's linked list. FIXME choose some lowercase letter cuz capitals mean internal node.'
+			S(b c d) means 'TODO finish this example' some structure of s(...) that generates a linkedlist of what these 3 return f(b param) f(c param) f(d param) when called on the param of S(b c d).
+			Example: s(,put )
+		]
+		
+		F(,getdeep L() )
+		
+		FIXME theres 2x2 kinds of some ob types: the s vs non-s kind, outerjoin is it used as an inner node or not (where any map can be the inner node of another map if its key range doesnt overlap other childs and 2-way-trie constraints on the keys). What singleChars should I use for these? capital/lowercase? How about a second prefix char such as l(4 5 6 _l(...)) which is a linkedlist and if its a sLinkedList write it as L(4 5 6 _L(...)) so s-anything would be capital letter (excluding /(comments) cuz not everything has an s- form). The s form of f(a b c) would be F(a b c). Technically I could build a M(...keys and values are returned by each is a func that takes the param of the map's param...), but I dont know if Id use it. But I wanted to keep it simple by prefix of () being always 1 char. I really like the lowercase/capital being normal vs s-. Maybe I should say l(_(...) _(...)) since we know from the outer l that the inner (...) are l(...) as its always the same type EXCEPT MAYBE... treelist can have another treelistPair as child node (thats the _l(...)), and it can have an array as its child node, and it can have any object as a single item (ListSingle wraps it)
+		...
+		Im keeping the f/F a/A l/L a/A m/M etc syntax, where lowercase is normal and capital is a func made of s'es that generates such a datastruct, and any _ followed by 1 char then lparen is an internal node such as l(4 5 6 _l(7 8)) is a linkedlist and could also be written as l(4 5 6 7 8) or l(4 _l(5 _l(6 _l(7 _l(8)))). _l(8) is a consPair<8,nil> which is similar to f(cons 8 nil). Usually you wont see any _ as it will just be written as l(4 5 6 7 8) but when datastructs get very big youll need to view a few parts that way.
+		...
+		TODO those 3 kinds of treelist childs, choose a syntax for these CHILD OF TREELIST...
+		(Im taking 'v' to mean avlTreeList, and 'a' to mean array)
+		AVL_TREELISTPAIR       : _v(...)
+		AVL_CONTENTSOFARRAY    : _a(...)
+		AVL_ANYOBJECTASLISTITEM: 3 or v(...) or a(...), just write the object as usual.
+		How about 'a' means array, and choose some other char for treelist, and there would be 2 kinds of inlining, one as a single item and one as its contents. Ive been writing _ to mean by its contents. What char to mean inline as an item? TreelistPair has some small var (maybe a mask in its header or 2 instances of enum for its left and right childs?) that tells if its a child treelistpair, inline of array contents, or inline of a single item, but to have a list of size 1 youd still need a TreelistSingle even though thats not used anywhere in a treelist of at least size 2 (except if that happens to be in the contents of the list).
+		Linkedlist and treelist are both technically trees and lists. Everything in this system is either at tree or a leaf. So I want to name them (with 1 char each) something easy to remember.
+
+		_ or no _, depends if its the outer object:
+		TREEMAPPAIR  : m(...) at least 4 things in it as 2 key/value pairs.
+		TREEMAPSINGLE: m(key val) //You can see its single by there only being 1 key/value pair, so no need for a different char than m.
+		
+		POINTER, WHOSE SECOND BIT (IN 192 BIT ID) TELLS IF ITS A STRONG/NORMAL REF VS WEAKREF/RECOGFUNCOFTHESTRONGREFFORM
+		REF      :  $5ab45456bab45456bab45456bab45456
+		INLINEREF: _$5ab45456bab45456bab45456bab45456
+		
+		INLINECONTENTS: _
+		CANCELLED(INLINEASONE   : @)
+		WAIT, THERES NO NEED FOR AN INLINEASONE AT SYNTAX LEVEL CUZ YOU WOULD JUST WRITE IT AS USUAL,
+		LIKE v(_v(... 5) _v(_v() v(...))) The inner v(...) and inner 5 are just normal objects in the list. _ is the only inline char needed.
+		
+		p(a b c d) is progn of those things. Its similar to sCurryList and sLinkedList. It takes 1 param and feed it into a, takes what that returns and feeds it into b, and so on for var size list, returning what the last call returns.
+		
+	)
+	f(
+		f(? "ignoredataFuncParam")#igfp
+		l(
+			f(? "plus")#+
+			f(? "multiply")#*
+			f(? "negate")#-
+			f(? "ABC$$ac$bc")#s
+			f(? "ABa")#k
+			f(? "ABC$$cab")#cons
+		)
+		/(
+			TODO recurrentNeuralNet (rnn) code goes here, takes a map containing rnn, input, etc, and returns the next state of that map.
+			This is not a lstm. I'll do that later. This is rnn as a proofOfConcept of occamsfuncer since its never done anything that advanced and I need to work out the details of optimizations as in occamsfuncerDesign2019-4-14.
+			First, I should choose an example of such a map and write it here...
+			m(
+				;sizeNodes
+				200
+				'1d array used as 2d, ;sizeNodes by ;sizeNodes'
+				;weights
+				v(...)
+				'1d array used as 2d, ;sizeInputs by ;sizeNodes'
+				;inputs
+				v(...)
+			)
+		)
+		F(
+			TODO
+		)
+	)
+)
