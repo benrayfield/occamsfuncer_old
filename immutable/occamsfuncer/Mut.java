@@ -1,3 +1,4 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
 
 /** As an optimization, code may modify a leaf before any Funcer sees it.

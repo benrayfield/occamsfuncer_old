@@ -1,4 +1,8 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import static mutable.util.Lg.*;
+import java.io.OutputStream;
+
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
@@ -6,16 +10,33 @@ import immutable.occamsfuncer.HaltingDictator;
 
 public class Leaf<T> extends AbstractFuncer<T>{
 	
+	static{
+		todo("TODO multiformats varint for up to some small limit of dims (maybe 14 or 15?)"
+			+" of hyper-rect array (such as float[43][4][55] but not triangleArray),"
+			+" and get that data format finalized, along with the headers for weakref,"
+			+" hash, literalInId, etc. TODO https://github.com/multiformats/multihash/issues/87");
+	}
+	
+	/*TODO merge Funcer.java with Tensor.java, where every leaf is a Tensor,
+	though I may want less abstraction such as viewing a set of tensors
+	as the outerjoin of all their dims and 1 more dim to say which tensor it is
+	such as AB multiply BC is a 5d tensor a,b0,b1,c,whichOfThose2Tensors
+	and the result is derived from mat[a][b][b][c][0]*mat[a][b][b][c][1];
+	But I will keep the Num optimization of a 0 dimensional tensor
+	(or in the byte[] content view by multiformats_varint
+	its a 1 dimensional tensor of 64 bits, always 1 more dim).
+	*/
+	
 	/** value, such as Double or float[][][][][] */
 	public final T v;
 	
-	public Leaf(int header, Funcer salt, T v){
-		super(header, salt);
+	public Leaf(short firstHeader, Funcer salt, T v){
+		super(firstHeader, salt);
 		this.v = v;
 	}
 	
 	public Opcode leftmostOp(){
-		return Opcode.i;
+		return Opcode.identityFunc;
 	}
 	
 	public T v(){
@@ -42,48 +63,44 @@ public class Leaf<T> extends AbstractFuncer<T>{
 		//return Const.nil;
 	}
 
-	public Id id(){
-		throw new Error("TODO");
-	}
-
 	public Funcer f(Funcer param){
-		throw new Error("TODO");
+		return this;
 	}
 
 	public Funcer prex(Funcer startExcl){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer sufx(Funcer endExcl){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer prei(Funcer endIncl){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer sufi(Funcer startIncl){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer prex(long endExcl){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer sufx(long endExcl){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer cato(Funcer itemSuffix){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer catn(Funcer listSuffix){
-		throw new Error("TODO");
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer flat(){
-		throw new Error("TODO");
+		return this;
 	}
 
 	public Funcer put(Funcer key, Funcer value){
@@ -127,7 +144,19 @@ public class Leaf<T> extends AbstractFuncer<T>{
 	}
 
 	public Funcer<T> setSalt(Funcer salt){
-		return new Leaf(header, salt, v);
+		return new Leaf(firstHeader, salt, v);
+	}
+
+	public Funcer fStrict(Funcer param){
+		throw new Error("TODO");
+	}
+
+	public void content(OutputStream out){
+		throw new Error("TODO");
+	}
+
+	public int contentLen(){
+		throw new Error("TODO");
 	}
 
 }

@@ -1,31 +1,31 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
-import static immutable.occamsfuncer.ImportStatic.*;
+import static immutable.occamsfuncer.ImportStatic.nil;
 
 import java.io.OutputStream;
-
 import immutable.occamsfuncer.Funcer;
-import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
+import immutable.occamsfuncer.HaltingDictator;
 
-/** optimization of Leaf when value is a double and salt is ImportStatic.nil. */
-public final class Num implements Funcer<Double>{
+public class Import implements Funcer{
 	
-	public final double v;
+	public static Import instance = new Import();
 	
-	private Id id;
+	public final Id id = Id.id(this);
 	
-	public Num(double v){
-		this.v = v;
-	}
+	private  Import(){}
 	
 	public Funcer f(Funcer param){
-		return this;
+		short firstHeader = 0; //FIXME
+		//Call.java checks for TheImportFunc and caches Opcode leftmostOp and curries.
+		//TheImportFunc takes 1 param before knowing how many curries.
+		return new Call(firstHeader, nil, this, param);
 	}
 	
+	/** no fp ops */
 	public strictfp Funcer fStrict(Funcer param){
-		return this;
+		return f(param);
 	}
 
 	/** same as in AbstractFuncer */
@@ -69,19 +69,19 @@ public final class Num implements Funcer<Double>{
 	}
 
 	public Funcer<Double> setSalt(Funcer salt){
-		return salt==nil ? this : new Leaf(firstHeader(), salt, v);
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer minKey(){
-		throw HaltingDictator.throwMe;
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
 	public Funcer maxKey(){
-		throw HaltingDictator.throwMe;
+		return HaltingDictator.evalInfiniteLoop();
 	}
 
-	public Double v(){
-		return v;
+	public Object v(){
+		return HaltingDictator.evalInfiniteLoop(); //FIXME return nil?
 	}
 
 	public Opcode leftmostOp(){
@@ -97,10 +97,7 @@ public final class Num implements Funcer<Double>{
 		return 1;
 	}
 
-	public Id id(){
-		if(id == null) id = Id.id(this);
-		return id;
-	}
+	public Id id(){ return id; }
 
 	public boolean contentFitsInId(){
 		return true;
@@ -174,4 +171,7 @@ public final class Num implements Funcer<Double>{
 		throw new Error("TODO");
 	}
 
+	public int compareTo(Object o){
+		throw new Error("TODO");
+	}
 }

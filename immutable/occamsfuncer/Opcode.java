@@ -6,6 +6,7 @@ import static immutable.occamsfuncer.HaltingDictator.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 
 //import immutable.occamsfuncer.funcers.Funcall;
@@ -37,6 +38,47 @@ or . or - or 0 1 2 3 4 5 6 7 8 9 and cant contain whitespace.
 */
 public enum Opcode{
 	
+	
+	
+	
+	
+	/*TODO hook learnloop and recurrentjava LSTM, both opencl optimized (todo on recurrentjava),
+	but only if whitelisted, and dont just pop up a message to user to click ok
+	since users allow almost anything without looking into it,
+	but this is how i can hook in plugins and get occamsfuncer doing something useful
+	and later hopefully port all the plugins to occamsfuncer
+	so wont need or allow plugins anymore as its turingcomplete and anything
+	can be optimized and built inside occamsfuncer.
+	...
+	such plugins must still hook into HaltingDictator.topWallet etc.
+	...
+	Think now about what Id want to build that me and AI would do together
+	when later I have RBM and LSTM usable from occamsfuncer.
+	*/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/* use f(? "`") or f(? "`````") etc instead
+	...
 	/** Wraps a func of 1 param in a chosen number of curries.
 	This is the ` op (TODO use ` in OccamsfuncerParser).
 	I'm undecided if this will be an op vs something built into the Funcer interface.
@@ -48,11 +90,12 @@ public enum Opcode{
 	Param2 param3... are the params funcOfABCD pays attention to,
 	but for efficiency funcOfABCD must take <<` <` <` `>>> funcOfABCD a b c d> a a param not just some
 	structure of a b c and d. <<` <` <` `>>> funcOfABCD a b c d> is <<<<<<` <` <` `>>> funcOfABCD> a> b> c> d>.
-	 */
+	*
 	curry(-1, (UnaryOperator<Funcer>)(Funcer p)->{
 		$(1);
 		throw new Error("FIXME THE OPCODE ABOVE IS (THE ONLY) VARIABLE SIZE SO NEEDS SOMETHING SPECIAL IN Funcer.curry BYTE AND MAYBE SHOULDNT BE AN OPCODE AT ALL.");
 	}),
+	*/
 	
 	/** instantly throws Wallet.throwMe cuz to run a known infinite loop
 	would take more compute resources than is available. This also happens whenever you try to run
@@ -62,7 +105,7 @@ public enum Opcode{
 	Its important in occamsfuncer VM design that nondeterminism be limited to certain parts
 	including Wallet and strict vs nonstrict modes and statistics on compute cycles and memory.
 	*/
-	infiniteLoop(1, (UnaryOperator<Funcer>)(Funcer p)->{
+	infiniteLoop(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		return evalInfiniteLoop();
 	}),
 	
@@ -83,7 +126,7 @@ public enum Opcode{
 	dont remember by what, maybe its ,xyz means funcall of k on xyz?). Just choose
 	a char, and this will be ok.
 	*/
-	lazyEval(3, (UnaryOperator<Funcer>)(Funcer p)->{
+	lazyEval(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		//throw new Error("TODO");
 		return (Funcer)null;
@@ -122,14 +165,14 @@ public enum Opcode{
 	trusted plugins depending which code you're using.
 	But it would be worse if different implementations had different core ops,
 	so I'm including this plugin op to standardize that.
-	*/
-	plugin(2, (UnaryOperator<Funcer>)(Funcer p)->{
+	*
+	plugin(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
-	}),
+	}),*/
 	
 	/** RELATED TO EACHOTHER: CoreType.lazyEval and and Opcode.lazyEval Opcode.triggerLazyEval */
-	triggerLazyEval(1, (UnaryOperator<Funcer>)(Funcer p)->{
+	triggerLazyEval(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		//throw new Error("TODO");
 		return (Funcer)null;
@@ -201,10 +244,11 @@ public enum Opcode{
 	else the op is Opcode.data which causes it to (TODO I'm undecided,
 	eval to itself? eval to nil? eval to its param so acts like identityFunc?)
 	*/
-	data(0, (Funcer p)->{
+	data(0, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
+	
 	
 	/** TODO hook into OccamsfuncerParser.java if language is "occamsfuncer".
 	<br><br>
@@ -235,7 +279,7 @@ public enum Opcode{
 	if the language is "occamsfuncer" or you could reimplement that too (using other ops)
 	or use it as a lower level to compile to.
 	*/
-	eval(1, (Funcer p)->{
+	eval(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -244,7 +288,7 @@ public enum Opcode{
 	[lave {"lang":"occamsfuncer", "ns":mapAsNamespace, "ob":viewMeAsCodeString}]
 	returns the codeString that can be used in eval.
 	*/
-	lave(1, (Funcer p)->{
+	lave(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -255,7 +299,7 @@ public enum Opcode{
 	are built on it (such as responding to "copyright takedown" demands),
 	prevent errors in the merkle forest.
 	*/
-	weakref(1, (Funcer p)->{
+	weakref(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -268,7 +312,7 @@ public enum Opcode{
 	Example: there are many combos of lazycatPairs that form a string or list (avl-like)
 	but only 1 of them is the normed form. If you want that, call Funcer.norm() or Opcode.norm on it.
 	*/
-	norm(1, (Funcer p)->{
+	norm(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -301,13 +345,13 @@ public enum Opcode{
 	it doesnt matter that code can ask if its in strict mode
 	since in strict mode thats the constant T.
 	*/
-	callerIsStrict(1, (Funcer p)->{
+	callerIsStrict(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** [strictCall func param] returns eval of [func param] in strict mode. */
-	strictCall(2, (Funcer p)->{
+	strictCall(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -397,12 +441,12 @@ public enum Opcode{
 	and maybe all such cache will be emptied ~50 times per second (per rootCall)
 	as often as Human does things in UI such as a small mouse movement.
 	*/
-	wallet(1, (Funcer p)->{
+	wallet(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	/* {spend returnThisIfFail maxSpend func param}
+	/* f(? "spend" returnThisIfFail maxSpend func param)
 	returns what {func param} returns else returnThisIfFail.
 	aka {{{{spend returnThisIfFail} maxSpend} func} param}
 	OLD: 
@@ -417,15 +461,35 @@ public enum Opcode{
 	with potentially different limits (can only limit to less, cant grab more).
 	This is related to econacyc and its variations (mindmap binufnodeSandboxingTypes).
 	*/
-	spend(4, (Funcer p)->{
+	spend(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
-		throw new Error("TODO");
+		long saveWallet = 0;
+		try{
+			//f(? "spend" returnThisIfFail maxSpend func param)
+			long requestedMaxSpend = (long)L.L().R().d();
+			Funcer func = L.R();
+			Funcer param = R;
+			long actualMaxSpend = Math.min(HaltingDictator.topWallet-1,Math.max(0L,requestedMaxSpend));
+			saveWallet = HaltingDictator.topWallet-actualMaxSpend;
+			HaltingDictator.topWallet = actualMaxSpend;
+			return func.f(param); //throws HaltingDictator.throwMe if would run out of compute resources
+		}catch(HaltingDictator d){
+			return L.L().L().R(); //returnThisIfFail
+		}finally{
+			HaltingDictator.topWallet += saveWallet;
+		}
 	}),
+	
+	/*What if its sCurryList/Call instead of normalFuncall/Call when getting params by p.L().L().R() etc?
+	If so, it would return the normalFuncall/Call before calling it on the param of the sCurryList/Call,
+	so not a problem.
+	*/
+	
 	
 	/** Lx.Ly.Lz.xz(yz). The s and t/k lambdas are turingComplete by themselves
 	and with the tricons optimization and "recusion lambda with kernel1d" do controlflow.
 	*/
-	s(3, (Funcer p)->{
+	s(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -433,7 +497,7 @@ public enum Opcode{
 	/** Lx.Ly.x. The s and t/k lambdas are turingComplete by themselves
 	and with the tricons optimization and "recusion lambda with kernel1d" do controlflow.
 	*/
-	t(2, (Funcer p)->{
+	t(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -441,7 +505,7 @@ public enum Opcode{
 	/** Lx.Ly.y, f/false, counterpart of t/true. Could be emulated as {k i},
 	but it happens so often, its an optimization to include it as an Op.
 	*/
-	f(2, (Funcer p)->{
+	f(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -449,7 +513,7 @@ public enum Opcode{
 	/** identityFunc aka {{sk}k} but since its the left/func of every leaf, I made it an Op.
 	The right/param of every leaf is that leaf itself, so leaf.L() called on leaf.R() returns leaf.
 	*/
-	i(1, (Funcer p)->{
+	identityFunc(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -466,7 +530,7 @@ public enum Opcode{
 	*/
 	
 	/** Lx.Ly.<x<cons x y>> */
-	recurse(2, (Funcer p)->{
+	recurse(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -504,18 +568,31 @@ public enum Opcode{
 	I choose (1) cuz its the same number of nodes and is simpler cuz reuses Opcode.recurse instead of
 	creating a similar logic. 
 	*/
-	ignoredataFuncParam(3, (Funcer p)->{
+	ignoredataFuncParam(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		//<Opcode.statefulFunc func data param> returns eval of <func param>
 		//aka <<<Opcode.statefulFunc func> data> param>
-		Funcer func = p.L().L().R();
-		Funcer param = p.R();
+		Funcer func = L.L().R();
+		Funcer param = R;
 		return func.f(param);
 	}),
 	
-	idAsLeaf(1, (Funcer p)->{
+	/** f(?? "idAsLeaf" getMyId) */
+	idAsLeaf(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
-		return p.id().asFuncer();
+		return R.id().asFuncer();
+	}),
+	
+	/** This is replacing the kernel opcode etc. It will instead tell occamsfuncerVM to look for
+	certain optimizations (which it may do even without this) in f(func param)
+	where this is f(? "callWithOptimizationHints" optimizationHints func param)
+	*/
+	callWithOptimizationHints(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		Funcer optimizationHints = L.L().R();
+		Funcer func = L.R();
+		Funcer param = R;
+		throw new Error("TODO");
 	}),
 	
 	/** TODO rewrite these comments. Theres too many OLD and disorganized comments,
@@ -624,11 +701,11 @@ public enum Opcode{
 	//vs should that optimization happen on its own?
 	The kernel1d lambda will create double[] (arrays) caching the results of
 	a function called on its indexs (each a float64) in some range.
-	*/
+	*
 	kernel(6, (Funcer p)->{
 		$();
 		throw new Error("TODO");
-	}),
+	}),*/
 	
 	
 	
@@ -674,31 +751,31 @@ public enum Opcode{
 	*/
 	
 	/** returns T/K (Lx.Ly.x) or F (Lx.Ly.y) depending if its 2 curried params == */
-	obWeakEquals(2, (Funcer p)->{
+	obWeakEquals(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** returns T or F depending if the .d() (returns double) form of its 2 params == */
-	floatEquals(2, (Funcer p)->{
+	floatEquals(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** Lx.Ly.Lz.zxy */
-	cons(2, (Funcer p)->{
+	cons(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
-	car(1, (Funcer p)->{
+	car(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
-	cdr(1, (Funcer p)->{
+	cdr(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -766,18 +843,18 @@ public enum Opcode{
 	listmapMax(1),
 	*/
 	
-	minKey(1, (Funcer p)->{
+	minKey(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	maxKey(1, (Funcer p)->{
+	maxKey(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** [hasKey map key] returns T or F */
-	hasKey(2, (Funcer p)->{
+	hasKey(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -787,13 +864,13 @@ public enum Opcode{
 	Caller should have checked hasKey if they wanted to know for sure
 	it didnt map to that constant
 	*/
-	get(2, (Funcer p)->{
+	get(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** [put map key val] returns forkEdited map with that key/val pair */
-	put(3, (Funcer p)->{
+	put(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -801,7 +878,7 @@ public enum Opcode{
 	/** [rem map key] returns forkEdited map without that key,
 	or if it already didnt have the key, returns the same map by ==.
 	*/
-	rem(2, (Funcer p)->{
+	rem(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -814,13 +891,13 @@ public enum Opcode{
 	but dont know its there and was not allocated enough wallet to go find it
 	or wallet includes gamingLowLag statistics so wont look for long.
 	*/
-	getByIdBits(1, (Funcer p)->{
+	getByIdBits(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** Returns bitArray of the hash kind of id of its param. */
-	globalIdBits(1, (Funcer p)->{
+	globalIdBits(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -829,7 +906,7 @@ public enum Opcode{
 	which is ok to send across untrusted borders (which they should ignore) but not ok
 	to accept incoming from outside untrusted borders.
 	*/
-	localIdBits(1, (Funcer p)->{
+	localIdBits(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -913,7 +990,7 @@ public enum Opcode{
 	and a final DoubleBinaryOperator object in each,
 	and run those in an array.
 	*/
-	acyclicFlow(5, (Funcer p)->{
+	acyclicFlow(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -944,7 +1021,7 @@ public enum Opcode{
 	/** /** https://en.wikipedia.org/wiki/Lambda_calculus says nil is λx.TRUE.
 	In occamsfuncer syntax thats [T T]. TODO verify that works with cons car cdr T F etc.
 	*/
-	nil(1, (Funcer p)->{
+	nil(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -954,19 +1031,19 @@ public enum Opcode{
 	
 	
 	/** concat lists (TODO should this also apply to maps and arrays?) */
-	cat(2, (Funcer p)->{
+	cat(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** prefix of list at endExcl index */
-	pre(2, (Funcer p)->{
+	pre(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** suffix of list at start index */
-	suf(2, (Funcer p)->{
+	suf(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -1082,7 +1159,7 @@ public enum Opcode{
 	starting x at 0 if not exist or is not a number.
 	Same as you could do with get, put, and plus.
 	*/
-	plusEq(5, (Funcer p)->{
+	plusEq(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -1094,7 +1171,7 @@ public enum Opcode{
 	TODO
 	How to derive a ++ func: <````` s<..TODO call that same func except with ;x being param..>> 
 	*/
-	updateVar(5, (Funcer p)->{
+	updateVar(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -1102,109 +1179,109 @@ public enum Opcode{
 	/** ignores its param and returns the constant (float64)1.
 	From this and the other float64 ops, you can derive any float64 value.
 	*/
-	getOne(1, (Funcer p)->{
+	getOne(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** float64 plus. everything other than float64 is viewed as 0. */
-	plus(2, (Funcer p)->{
+	plus(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	negate(1, (Funcer p)->{
+	negate(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** float64 multiply */
-	multiply(2, (Funcer p)->{
+	multiply(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** float64 1/param */
-	oneDivide(1, (Funcer p)->{
+	oneDivide(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** float64 e^param */
-	eExponent(1, (Funcer p)->{
+	eExponent(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** float64 logE(param). There is no log(String) func cuz that would be stateful. */
-	logE(1, (Funcer p)->{
+	logE(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** x exponent y */
-	pow(2, (Funcer p)->{
+	pow(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
 	/** float64 lessThan, which curries 2 params and returns T or F */
-	lessThan(2, (Funcer p)->{
+	lessThan(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	lessThanOrEq(2, (Funcer p)->{
+	lessThanOrEq(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	greaterThan(2, (Funcer p)->{
+	greaterThan(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	greaterThanOrEq(2, (Funcer p)->{
+	greaterThanOrEq(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	sine(1, (Funcer p)->{
+	sine(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	arcsine(1, (Funcer p)->{
+	arcsine(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	min(2, (Funcer p)->{
+	min(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	max(2, (Funcer p)->{
+	max(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	floor(1, (Funcer p)->{
+	floor(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	ceil(1, (Funcer p)->{
+	ceil(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	round(1, (Funcer p)->{
+	round(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
 	
-	abs(1, (Funcer p)->{
+	abs(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -1213,7 +1290,7 @@ public enum Opcode{
 	which says it does that more precisely than the individual ops.
 	If Funcer.isStrict then would lose that precision.
 	*/
-	hypot(2, (Funcer p)->{
+	hypot(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -1239,7 +1316,7 @@ public enum Opcode{
 	isErr doesnt count since user level code cant get those.
 	UPDATE: using throw/catch for Op.spend, and get/minKey/etc can return null for not found.
 	Returns T if param is a float64, else F if param is a function */
-	isFloat(1, (Funcer p)->{
+	isFloat(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -1251,7 +1328,7 @@ public enum Opcode{
 	Would technically be true if its a funcall in progress or lazyeval,
 	but this wouldnt eval until its param returns.
 	*/
-	isFuncall(1, (Funcer p)->{
+	isFuncall(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		//return cwrap(p.coreType()==CoreType.funcall);
 		throw new Error("TODO");
@@ -1265,7 +1342,7 @@ public enum Opcode{
 	*/
 	
 	/** Returns T if param is a MapPair, MapSingle, or MapEmpty, else returns F */
-	isMap(1, (Funcer p)->{
+	isMap(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	});
@@ -1276,7 +1353,8 @@ public enum Opcode{
 	//TODO binufnodeSandboxingTypes
 	//TODO chooseFirstFewOptimizationsForAiMusician
 	
-	public final UnaryOperator<Funcer> func;
+	/** Its BinaryOperator instead of UnaryOperator cuz Call.java is not created for the last curry */
+	public final BinaryOperator<Funcer> func;
 
 	public final int waitCurries;
 	
@@ -1285,7 +1363,7 @@ public enum Opcode{
 	
 	//public final int magic32;
 	
-	private Opcode(int waitCurries, UnaryOperator<Funcer> func){
+	private Opcode(int waitCurries, BinaryOperator<Funcer> func){
 		this.func = func;
 		this.waitCurries = waitCurries;
 		//this.fc = new Funcall(null, null, null, this, 0);
@@ -1339,6 +1417,16 @@ public enum Opcode{
 		}catch(IllegalArgumentException e){
 			return Opcode.infiniteLoop;
 		}
+	}
+	
+	/** returns an Opcode if this occamsfuncerVM supports that opcode,
+	else its probably an opcode from an opensource fork of occamsfuncerVM,
+	and the correct behavior in that case is when caller detects this returns null
+	caller must HaltingDictator.evalInfiniteLoop() (which halts instantly
+	not having the resources to do that, jumping to the ELSE of the topmost Spend call).
+	*/
+	public static Opcode getOrNull(Funcer paramOfTheImportFunc){
+		throw new Error("TODO get string from param then return get(String). param="+paramOfTheImportFunc);
 	}
 
 }

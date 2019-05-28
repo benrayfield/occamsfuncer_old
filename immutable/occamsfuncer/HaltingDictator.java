@@ -1,6 +1,7 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
 
-/** workaround for lack of halting oracle.
+/** workaround for lack of halting oracle (which is impossible math to ever exist).
 Every program halts when it runs out of compute resources, recursively limited
 by Spend calls inside Spend calls which can be as deep as the java stack allows
 without making it significantly slower. Is turingComplete up to that limit
@@ -16,7 +17,10 @@ to end it, it technically halted since you didnt change the computing hardware
 and the hardware didnt break or make an error and that program is not running anymore.
 Thats what I want for programs in this system, to be able to efficiently
 (many thousands of times per second) ctrl+alt+del their calls of functions inside functions,
-so nomatter how bad things get they will always halt and move on to something better. 
+so nomatter how bad things get they will always halt and move on to something better,
+except it works even singlethreaded as limit of compute resources
+like Spend and HaltingDictator are similar to try/catch for compute resources.
+(TODO rewrite this paragraph simpler) 
 */
 public class HaltingDictator extends RuntimeException{
 	private HaltingDictator(){}
@@ -56,7 +60,7 @@ public class HaltingDictator extends RuntimeException{
 	updated continuously about log(objects) cost per new object on average, zapeconacyc
 	or (very slow, objects^2 bigO) fullEconacyc, etc.
 	*/
-	private static long topWallet;
+	public static long topWallet;
 	
 	/** TODO MAKE THIS AN OPTION.
 	nanoseconds since year 1970 UTC. Every funcer created pays to topWallet to

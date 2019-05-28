@@ -1,7 +1,10 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
-
+import static immutable.occamsfuncer.ImportStatic.*;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+
+import immutable.occamsfuncer.funcers.Import;
 
 /*IMPORTANT!!!!!!!!!!!!
 I am going to start using merkleforest soon, today is 2019-4-10 (if can get few parts built).
@@ -198,6 +201,29 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	I'm not confident in opencl's strict option which I've read varies on some systems.
 	*/
 	public Funcer fStrict(Funcer param);
+	
+	public default Funcer f(Object param){
+		return f(wr(param));
+	}
+	
+	public default Funcer fStrict(Object param){
+		return fStrict(wr(param));
+	}
+	
+	/** 0-15 dimensions. Everything is 0 dimensional except Leaf (and maybe ListLeafArray?).
+	Example of 4d: wrapper of float[55][99937][20], which has a [32] last dim since float is 32 bits.
+	*/
+	public default int dims(){
+		return Data.howManyDims(firstHeader());
+	}
+	
+	/** 0 <= dimIndex() < dims().
+	After firstHeader which is 16 bits, theres multiformatsVarint per dim, then the content which
+	is as many bits as the multiply of all those dim sizes
+	(TODO rounded up to the next byte if not a multiple of 8?), aka a tensor.
+	*/
+	public int dimSize(int dimIndex);
+	TODO get java code for multiformatsVarint
 
 	/** for merkle hashing into my id, write the content to be hashed,
 	just my few local vars, not recursively into other Funcers I can reach but include their ids.
@@ -217,8 +243,11 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	public int contentLen();
 	
 	
-	//often doesnt use the whole int. includes LContext RContext avlBalance etc.
-	public int header();
+	//OLD: often doesnt use the whole int. includes LContext RContext avlBalance etc.
+	/** this is the first 16 bits of header, before the multiformatsVarints and content,
+	as described in Data class comment.
+	*/
+	public short firstHeader();
 	
 	public long maplistSize();
 	
@@ -298,6 +327,11 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	*/
 	public Funcer salt();
 	
+	/** true if x.setSalt(y).salt()==y, false if salt is always nil.
+	Examples of nonsaltable classes: Weakref, TheImportFunc. TODO Leaf shouldnt be saltable?
+	*/
+	public boolean canSalt();
+	
 	/** Returns this forkEdited to have the given salt. TODO create Num.java thats just a double
 	and doesnt store header or salt and its salt is always NIL, and if setSalt on that get a Leaf.java
 	of that same double with the chosen salt.
@@ -321,6 +355,14 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 		//and other kinds of leafs (such as float[][][][][] or Long) could go in Leaf.java.
 	}
 	
+	public default int i(){
+		return (int)d();
+	}
+	
+	public default float f(){
+		return (float)d();
+	}
+	
 	/** the op right after theImportFunc,
 	or theres a constant op for map, for list, and a few other things.
 	*/
@@ -328,8 +370,9 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	
 	/** the "?" in <? "plus" 3 4> which returns 7.
 	In <? "plus"> and <? "plus" 3>, leftmostOp is plus (TODO whats its exact name?)
+	*
+	public default boolean isTheImportFunc(){ return this==TheImportFunc.instance; }
 	*/
-	public boolean isTheImportFunc();
 	
 	/** number of curries remaini`ng before eval (max 15). TODO max 14 and use 15 to mean will never eval? */
 	public byte cur();
@@ -341,7 +384,9 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	public boolean contentFitsInId();
 	
 	/** Mask.weakrefMask */
-	public boolean isWeakref();
+	public default boolean isWeakref(){
+		return (firstHeader()&Data.maskIsWeakref)!=0;
+	}
 	
 	/** If this Funcer wraps another Funcer and duplicates its every function call,
 	such as Stub.java may download a Funcer from harddrive or Internet using a Supplier<Funcer>,
@@ -443,11 +488,25 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	
 	public Funcer put(Funcer key, Funcer value);
 	
+	public default Funcer put(Object key, Object value){
+		return put(wr(key),wr(value));
+	}
+	
 	public Funcer get(Funcer key);
 	
 	public Funcer get(long key);
 	
 	public Funcer get(int key);
+	
+	/** automaticly wraps */
+	public default Funcer get(Object key){
+		return get(wr(key));
+	}
+	
+	/** add at end of list, if its a list, else TODO what? */
+	public default Funcer push(Funcer value){
+		throw new Error("TODO");
+	}
 	
 	/*
 	//Use long minExpireTime, SwarmPointer, etc. Local harddrive and local memory are 2 different peers

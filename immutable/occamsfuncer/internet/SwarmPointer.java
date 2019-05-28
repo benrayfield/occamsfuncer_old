@@ -1,3 +1,4 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.internet;
 
 import immutable.occamsfuncer.Id;

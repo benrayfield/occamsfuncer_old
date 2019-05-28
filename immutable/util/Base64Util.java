@@ -1,3 +1,4 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.util;
 
 public class Base64Util{

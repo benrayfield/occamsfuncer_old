@@ -1,3 +1,4 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
 
 import java.io.IOException;
@@ -7,27 +8,41 @@ import java.security.NoSuchAlgorithmException;
 
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
-import immutable.occamsfuncer.Mask;
 import immutable.occamsfuncer.Opcode;
 import immutable.util.BitsUtil;
 
 public abstract class AbstractFuncer<T> implements Funcer<T>{
 	
-	public final int header;
+	//FIXME use short firstHeader correctly, along with multiformatsVarint, and content.
+	//Get the datastruct finalized except for those starting with coretypeReserved.
+	
+	/** This is the first 16 bits, the part of header before the multiformatsVarints and content,
+	as described in Data class comment.
+	*/
+	public final short firstHeader;
 	
 	protected Id id;
 	
+	/** in syntax the salt is after @
+	such as f(?? "plus")@saltOfThisPlus#nameOfThisPlus
+	or such as f(?? "plus")@#saltAndNameOfThisPlus when salt and name happen to be same whitespaceless string,
+	and ?? is TheImportFunc.
+	*/
 	public final Funcer salt;
 	
 	//protected WeakReference<Funcer<T>> vmInternal_javaWeakReferenceToMe;
 	
-	public AbstractFuncer(int header, Funcer salt){
-		this.header = header;
+	public AbstractFuncer(short firstHeader, Funcer salt){
+		this.firstHeader = firstHeader;
 		this.salt = salt;
 	}
 	
 	public Funcer salt(){
 		return salt;
+	}
+	
+	public boolean canSalt(){
+		return true;
 	}
 	
 	/*public WeakReference<Funcer<T>> vmInternal_javaWeakReferenceToMe(){
@@ -37,8 +52,8 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 		return vmInternal_javaWeakReferenceToMe;
 	}*/
 	
-	public int header(){
-		return header;
+	public short firstHeader(){
+		return firstHeader;
 	}
 
 	public long maplistSize(){
@@ -62,6 +77,10 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 	public Id id(){
 		if(id == null) id = Id.id(this);
 		return id;
+	}
+	
+	public int dimSize(int dimIndex){
+		throw new Error("TODO");
 	}
 
 }

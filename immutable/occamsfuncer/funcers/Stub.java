@@ -1,4 +1,6 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import java.io.OutputStream;
 import java.util.function.Supplier;
 
 import immutable.occamsfuncer.Funcer;
@@ -41,8 +43,8 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 		return unstub.get();
 	}
 
-	public int header(){
-		return unstub().header();
+	public short firstHeader(){
+		return unstub().firstHeader();
 	}
 
 	public long maplistSize(){
@@ -75,6 +77,10 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 
 	public Funcer f(Funcer param){
 		return unstub().f(param);
+	}
+	
+	public Funcer fStrict(Funcer param){
+		return unstub().fStrict(param);
 	}
 
 	public Funcer prex(Funcer startExcl){
@@ -144,10 +150,6 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 	public Opcode leftmostOp(){
 		return unstub().leftmostOp();
 	}
-
-	public boolean isTheImportFunc(){
-		return unstub().isTheImportFunc();
-	}
 	
 	public boolean contentFitsInId(){
 		return unstub().contentFitsInId();
@@ -165,8 +167,20 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 		return unstub().setSalt(salt);
 	}
 	
+	public boolean canSalt(){
+		return unstub().canSalt();
+	}
+	
 	public Funcer salt(){
 		return unstub().salt();
+	}
+
+	public void content(OutputStream out){
+		throw new Error("TODO");
+	}
+
+	public int contentLen(){
+		throw new Error("TODO");
 	}
 
 }

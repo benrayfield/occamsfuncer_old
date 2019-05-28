@@ -1,6 +1,6 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
-
+import static immutable.occamsfuncer.ImportStatic.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.MessageDigest;
@@ -74,15 +74,17 @@ public final class Id implements Comparable<Id>{
 			
 			long longB = BitsUtil.readLongFromByteArray(temp32Bytes,8);
 			//First 2 bits are header. Next 190 bits are last bits of sha256 output.
-			int headerSize = 2;
+			int headerSize = 2; //maskIsHash and masIsWeakref are the high 2 bits
 			longB = ((longB>>>headerSize)<<headerSize);
 			//FIXME in Leaf and Num, contentFitsInId, so dont hash but should content be modified somehow?
 			//Or same content? Using multiformats_varint it should be small.
 			if(!f.contentFitsInId()){
-				longB |= Mask.hashMask;
+				//hash else is literal data that fits in id
+				longB |= (((long)Data.maskIsHash)<<48);
 			}
 			if(f.isWeakref()){
-				longB |= Mask.weakrefMask;
+				//weakref to same id except with weakref bit 0 else is the normal id such a weakref could point at
+				longB |= (((long)Data.maskIsWeakref)<<48);
 			}
 			////longB &= 0x0000ffffffffffffL;
 			//longB overwrite high bits with header. Havent decided which kind of header yet,
@@ -123,17 +125,17 @@ public final class Id implements Comparable<Id>{
 	
 	/** bit index 1 is 1 for weakref (of the id with that bit flipped), 0 for normal */
 	public boolean isWeakref(){
-		return (idA&Mask.weakrefMask)!=0;
+		return (idA&MaskIndex.weakrefMask)!=0;
 	}
 	
 	public boolean equalsIgnoringWeakrefBit(Id i){
-		long mask = ~Mask.weakrefMask;
+		long mask = ~MaskIndex.weakrefMask;
 		return (idA&mask)==(i.idA&mask) && idB==i.idB && idC==i.idC;
 	}
 	
 	public Id setWeakref(boolean becomeWeakref){
 		if(isWeakref() == becomeWeakref) return this;
-		return new Id(becomeWeakref ? (idA|Mask.weakrefMask) : (idA&~Mask.weakrefMask), idB, idC);
+		return new Id(becomeWeakref ? (idA|MaskIndex.weakrefMask) : (idA&~MaskIndex.weakrefMask), idB, idC);
 	}
 	
 	/** As Comparable, Id is 192 bit unsigned integer (despite java longs being signed). */
@@ -176,10 +178,11 @@ public final class Id implements Comparable<Id>{
 	or make a Funcer type that wraps an Id to save memory of not copying the 24 bytes.
 	It would be most efficient if Id instanceof Funcer, but I'm unsure if that breaks constraints.
 	*/
-	public Funcer asFuncer(){
+	public Funcer<int[]> asFuncer(){
 		int todoWhatHeader = 0; //FIXME
-		return new Leaf(
+		return new Leaf<int[]>(
 			todoWhatHeader,
+			nil,
 			new int[]{
 				(int)(idA>>>32),
 				(int)idA,

@@ -1,5 +1,9 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
 import static immutable.occamsfuncer.ImportStatic.*;
+
+import java.io.OutputStream;
+
 import static immutable.occamsfuncer.HaltingDictator.*;
 import immutable.occamsfuncer.*;
 
@@ -24,7 +28,7 @@ public class Weakref extends AbstractFuncer{
 	Creates weakref id (id of a recognizer-func of it) if its a non-weakref.
 	*/
 	public Weakref(Id myIdOrTargetsId){
-		super(0,nil); //FIXME use same header bits as in target except the weakref bit
+		super((short)0,nil); //FIXME use same header bits as in target except the weakref bit
 		this.id = myIdOrTargetsId.setWeakref(true);
 	}
 	
@@ -38,7 +42,12 @@ public class Weakref extends AbstractFuncer{
 	public Funcer f(Funcer param){
 		$();
 		Id p = param.id();
-		return id.equalsIgnoringWeakrefBit(p) && !p.isWeakref() ? Const.one : Const.zero;
+		return id.equalsIgnoringWeakrefBit(p) && !p.isWeakref() ? one : zero;
+	}
+	
+	/** no fp ops */
+	public Funcer fStrict(Funcer param){
+		return f(param);
 	}
 	
 	public Funcer setSalt(Funcer salt){
@@ -143,6 +152,14 @@ public class Weakref extends AbstractFuncer{
 
 	public boolean isWeakref(){
 		return true;
+	}
+
+	public void content(OutputStream out){
+		throw new Error("TODO");
+	}
+
+	public int contentLen(){
+		throw new Error("TODO");
 	}
 
 }

@@ -1,0 +1,58 @@
+m(
+	;!!!aPlaceToWriteImportsButTheyWillAppearExpandedOtherPlacesInsteadOfHereDependingOnSortedOrderOfKeys
+	l(
+		f(?? "`")#`
+		f(?? "``")#``
+		f(?? "```")#```
+		f(?? "````")#````
+		f(?? "`````")#`````
+		f(?? "``````")#``````
+		f(?? "```````")#```````
+		f(?? "ignoredataFuncParam")#igfp
+		f(?? "getRightChild")#R
+		f(?? "plus")#+
+		f(?? "multiply")#*
+		f(?? "negate")#-
+		f(?? "ABC$$ac$bc")#s
+		'builtInSyntax p(v w x y z) is p(p(p(p(v w) x) y) z) which does the same logic as p aka prognPair, aka f(p f(p f(p f(p v w) x) y) z)'
+		f(?? "ABC$b$ac")#p
+		f(?? "ABa")#k
+		'identityFunc, gets the param passed down forest of s'
+		f(?? "Aa")#this
+		f(?? "ABC$$cab")#cons
+		f(?? "TODO what lambda is car?")#car
+		f(?? "TODO what lambda is cdr?")#cdr
+		f(?? "TODO what lambda is nil?")#nil
+		f(?? "leftChild")#L
+		f(?? "rightChild")#R
+		f(?? "minKey")#minKey
+		f(?? "maxKey")#maxKey
+		f(?? "callWithOptimizationHints")#optimize
+		f(?? "whileRecogBodyState")#whileRBS
+		/(
+			FIXME what order are params of get? f(get aMap aKey) or f(get aKey aMap)?
+			To make it simpler to use with loops, ifelses, etc, I might choose f(get aKey aMap)
+			so f(get aKey) is a func that given a map returns 
+		)
+		f(?? "getKeyMap")#getKM
+		f(?? "putKeyValueMap")#putKVM
+		f(?? "emptyMap")#emptyMap
+		f(?? "lessThan")#<
+	)
+	
+	/(
+		TODO return a Funcer for immutable.occamsfuncer.Vob.paintVobs(java.awt.Graphics,Funcer) to display.
+		Mouse movements, mmgMouseai p2p streams, and gamepadServer etc,
+		but not jsoundcard cuz thats too many times per second,
+		will all go in a map in a ;uiInMap key in the param of this func.
+	)
+	;simpleTestLinesvob
+	f(
+		0
+		F(getKM ,;uiInMap)@#uiInMap
+		F(getKM ,;mouseYFraction uiInMap)@#mouseYFraction
+		F(getKM ,;mouseXFraction uiInMap)@#mouseXFraction
+		'TODO given mouse position, generate a list of vob to display.'
+	)
+	
+)

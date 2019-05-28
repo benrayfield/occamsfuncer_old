@@ -1,49 +1,60 @@
+/** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+
+import java.io.OutputStream;
 
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
+import immutable.occamsfuncer.ImportStatic;
 import immutable.occamsfuncer.Opcode;
 
-/** avl treelist */
-public class List extends AbstractCollection{
+/** treemap that lazyEvalHashes to same id for same set of key/value pairs
+regardless of order of adds and removes. Trigges lazyEvalHash of keys but not values.
+*/
+public class MapPair extends AbstractCollectionPair{
 	
-	//Do I want every object to allow map keys, sparse list keys, and leaf value?
-	//I could use a few classes for those combos.
+	/** min key is minKey.id(). max key is maxKey.id() */
+	public final Funcer minKey, maxKey;
 	
-	public List(int header, long maplistSize, Funcer minChild, Funcer maxChild){
-		super(header, maplistSize, minChild, maxChild);
+	public MapPair(short firstHeader, Funcer salt, long maplistSize, Funcer minChild, Funcer maxChild, Funcer minKey, Funcer maxKey){
+		super(firstHeader, salt, maplistSize, minChild, maxChild);
+		this.minKey = minKey;
+		this.maxKey = maxKey;
+	}
+	
+	/** map is func of key to value */
+	public Funcer f(Funcer param){
+		return get(param);
+	}
+	
+	/** in this case theres no fp math so just copy f(param) */
+	public Funcer fStrict(Funcer param){
+		return f(param);
 	}
 	
 	public Opcode leftmostOp(){
-		return Opcode.i;
+		return Opcode.identityFunc;
 	}
 
 	public Funcer minKey(){
-		return HaltingDictator.evalInfiniteLoop();
-		//return Const.zero;
+		throw new Error("TODO");
 	}
 
 	public Funcer maxKey(){
-		return HaltingDictator.evalInfiniteLoop();
-		//throw new Error("TODO return list size minus 1");
+		throw new Error("TODO");
 	}
 
 	public Object v(){
 		return HaltingDictator.evalInfiniteLoop();
-		//return Const.nil;
 	}
 
 	public Id id(){
 		throw new Error("TODO");
 	}
 
-	public Funcer f(Funcer param){
-		throw new Error("TODO");
-	}
-
 	public Funcer prex(Funcer startExcl){
-		throw new Error("TODO use param as list index");
+		throw new Error("TODO");
 	}
 
 	public Funcer sufx(Funcer endExcl){
@@ -94,10 +105,6 @@ public class List extends AbstractCollection{
 		throw new Error("TODO");
 	}
 	
-	public boolean contentFitsInId(){
-		return false;
-	}
-	
 	public boolean isWeakref(){
 		return false;
 	}
@@ -119,6 +126,14 @@ public class List extends AbstractCollection{
 	}
 
 	public int compareTo(Object o){
+		throw new Error("TODO");
+	}
+
+	public void content(OutputStream out){
+		throw new Error("TODO");
+	}
+
+	public int contentLen(){
 		throw new Error("TODO");
 	}
 
