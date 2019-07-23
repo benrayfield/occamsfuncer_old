@@ -1,14 +1,17 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
-import static mutable.util.Lg.*;
+import static mutable.util.Lg.todo;
+
 import java.io.OutputStream;
 
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
-import immutable.occamsfuncer.Id;
-import immutable.occamsfuncer.Opcode;
 import immutable.occamsfuncer.HaltingDictator;
+import immutable.occamsfuncer.Opcode;
 
 public class Leaf<T> extends AbstractFuncer<T>{
+	
+	todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
 	
 	static{
 		todo("TODO multiformats varint for up to some small limit of dims (maybe 14 or 15?)"
@@ -30,9 +33,43 @@ public class Leaf<T> extends AbstractFuncer<T>{
 	/** value, such as Double or float[][][][][] */
 	public final T v;
 	
-	public Leaf(short firstHeader, Funcer salt, T v){
-		super(firstHeader, salt);
+	/** Be careful not to break things by generating header wrong */
+	public Leaf(short firstHeader, T v){
+		super(firstHeader);
 		this.v = v;
+	}
+	
+	public Leaf(boolean isText, boolean isSemantic, T v){
+		super((short)(
+			(isText ? Data.masksIsText : 0)
+			| (isSemantic ? Data.maskIsSemantic : 0)
+			| Data.coretypeLeaf
+		));
+		this.v = v;
+	}
+	
+	public Funcer expand(){
+		return this;
+	}
+	
+	/** like Double or float[30][50] */
+	public static Leaf wrap(Object v){
+		return new Leaf(false,false,v);
+	}
+	
+	/** like "image/jpeg" but interpreted as a string */
+	public static Leaf wrapText(Object v){
+		return new Leaf(true,false,v);
+	}
+	
+	/** like "image/jpeg" */
+	public static Leaf wrapSemanticText(Object v){
+		return new Leaf(true,true,v);
+	}
+	
+	/** 2019-6-25 I dont know any examples of this, but its here for completeness of the masks */
+	public static Leaf wrapSemanticNontext(Object v){
+		return new Leaf(false,true,v);
 	}
 	
 	public Opcode leftmostOp(){
@@ -141,10 +178,6 @@ public class Leaf<T> extends AbstractFuncer<T>{
 	
 	public boolean isWeakref(){
 		return false;
-	}
-
-	public Funcer<T> setSalt(Funcer salt){
-		return new Leaf(firstHeader, salt, v);
 	}
 
 	public Funcer fStrict(Funcer param){

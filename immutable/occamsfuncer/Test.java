@@ -4,15 +4,15 @@ public class Test{
 	private Test(){}
 	
 	public static void testSCall(){
-		sCallList(TODO)
+		throw new Error("TODO sCallList(TODO)");
 	}
 	
 	static Funcer sCallList(Funcer... f){
-		
+		throw new Error("TODO");
 	}
 	
 	static Funcer sCall(Funcer L, Funcer R){
-		TODO use Call
+		throw new Error("TODO");
 	}
 
 }

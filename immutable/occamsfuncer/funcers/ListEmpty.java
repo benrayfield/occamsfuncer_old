@@ -1,6 +1,8 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
 import java.io.OutputStream;
+
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.ImportStatic;
@@ -9,10 +11,10 @@ import immutable.occamsfuncer.Opcode;
 /** TODO replace this class with an instance of ListLeafArray of size 0? */
 public class ListEmpty extends AbstractFuncer{
 	
-	public static final ListEmpty instance = new ListEmpty((short)0,ImportStatic.nil); //FIXME shortHeader
+	public static final ListEmpty instance = new ListEmpty();
 	
-	public ListEmpty(short firstHeader, Funcer salt){
-		super(firstHeader, salt);
+	public ListEmpty(){
+		super((short)Data.coretypeAvlListEmpty); //all mask bits 0
 	}
 
 	public Funcer f(Funcer param){
@@ -21,6 +23,10 @@ public class ListEmpty extends AbstractFuncer{
 
 	public Funcer fStrict(Funcer param){
 		throw new Error("TODO");
+	}
+	
+	public Funcer expand(){
+		return this;
 	}
 
 	public void content(OutputStream out){

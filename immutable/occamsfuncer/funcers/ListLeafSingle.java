@@ -2,15 +2,21 @@
 package immutable.occamsfuncer.funcers;
 import java.io.OutputStream;
 
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
 
 /** Interprets 1 funcer as a list item, instead of interpreting its contents as list items */
 public class ListLeafSingle extends AbstractFuncer{
+	
+	todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	
+	public final Funcer val;
 
-	public ListLeafSingle(short firstHeader, Funcer salt){
-		super(firstHeader, salt);
+	public ListLeafSingle(Funcer val){
+		super((short)Data.coretypeAvlListLeafSingle); //all mask bits 0
+		this.val = val;
 	}
 
 	public Funcer f(Funcer param){
@@ -19,6 +25,10 @@ public class ListLeafSingle extends AbstractFuncer{
 
 	public Funcer fStrict(Funcer param){
 		throw new Error("TODO");
+	}
+	
+	public Funcer expand(){
+		return this; //cuz L and R have all my parts
 	}
 
 	public void content(OutputStream out){
@@ -30,11 +40,11 @@ public class ListLeafSingle extends AbstractFuncer{
 	}
 
 	public Funcer L(){
-		throw new Error("TODO");
+		return Opcode.listLeafSingle.ob;
 	}
 
 	public Funcer R(){
-		throw new Error("TODO");
+		return val;
 	}
 
 	public Funcer setSalt(Funcer salt){

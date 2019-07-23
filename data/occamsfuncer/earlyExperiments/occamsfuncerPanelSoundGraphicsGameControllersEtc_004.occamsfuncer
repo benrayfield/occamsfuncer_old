@@ -1,0 +1,130 @@
+f(
+	(?? "ignoredataFuncParam")#igfp
+	m(
+		'a place to write imports but they will appear expanded other places insterad of here depending on sorted order of keys'
+		;!!!imports
+		l(
+			f(?? "`")#`
+			f(?? "``")#``
+			f(?? "```")#```
+			f(?? "````")#````
+			f(?? "`````")#`````
+			f(?? "``````")#``````
+			f(?? "```````")#```````
+			f(?? "ignoredataFuncParam")#igfp
+			f(?? "getRightChild")#R
+			f(?? "plus")#+
+			f(?? "multiply")#*
+			f(?? "negate")#-
+			f(?? "ABC$$ac$bc")#s
+			'builtInSyntax p(v w x y z) is p(p(p(p(v w) x) y) z) which does the same logic as p aka prognPair, aka f(p f(p f(p f(p v w) x) y) z)'
+			f(?? "ABC$b$ac")#p
+			f(?? "ABa")#k
+			'identityFunc, gets the param passed down forest of s'
+			f(?? "Aa")#this
+			f(?? "ABC$$cab")#cons
+			f(?? "TODO what lambda is car?")#car
+			f(?? "TODO what lambda is cdr?")#cdr
+			f(?? "TODO what lambda is nil?")#nil
+			f(?? "leftChild")#L
+			f(?? "rightChild")#R
+			f(?? "minKey")#minKey
+			f(?? "maxKey")#maxKey
+			f(?? "callWithOptimizationHints")#optimize
+			f(?? "whileRecogBodyState")#whileRBS
+			/(
+				FIXME what order are params of get? f(get aMap aKey) or f(get aKey aMap)?
+				To make it simpler to use with loops, ifelses, etc, I might choose f(get aKey aMap)
+				so f(get aKey) is a func that given a map returns 
+			)
+			f(?? "getKeyMap")#getKM
+			f(?? "putKeyValueMap")#putKVM
+			f(?? "emptyMap")#emptyMap
+			f(?? "lessThan")#<
+		)
+		
+		'time, location, admin publicKey, etc'
+		;context
+		m(
+			;time
+			1561577655.068
+			;testCount
+			0
+		)
+		
+		/(
+			Map of object to double in range -1 to 1.
+			Read and forkEdited by multiple systems to communicate to/from eachother.
+			Keyboard buttons are 0 to 1. Joystick, speaker, and microphone dims -1 to 1.
+			The p2p scalar andOr bit streams in mmgMouseai might also go here
+			but they're more likely to go somewhere else where their value is a map so nhmp and other things can be organized.
+			More complex things, such as Vob graphics, go somewhere else.
+			The value here will likely be forkEdited 22050 times per second (some calls may be up to .02 seconds)
+			for use with JSoundCard 		realtime interactive sound effects, using Opcode.acyclicFlow as an optimization
+			but will read and forkEdit microphone and speakers the unoptimized/interpreted way here
+			which happens between large blocks of optimized calculation.
+			Some checkboxlike options may also be in here.
+		)
+		;mapObToBifraction
+		m{
+			;defaultSoundHardware_microphone0
+			0
+			;defaultSoundHardware_speaker0
+			0
+			;defaultSoundHardware_speaker1
+			0
+			;defaultMouse_yFraction
+			.5
+			;defaultMouse_xFraction
+			.5
+			;defaultKeyboard_VK_A
+			0
+			;defaultKeyboard_VK_B
+			0
+			;defaultKeyboard_VK_LEFT
+			0
+			;defaultGyroscope_X
+			0
+			;defaultGyroscope_Y
+			0
+			;defaultGyroscope_yaw
+			0
+			;defaultGyroscope_angle
+			0
+			;defaultGyroscope_todoWhatAreTheNamesOfThe6GyroscopeDimsOrShouldItUse4x4Aftrans
+		}
+		
+		/(
+			list of Vob.java graphics which displays a linkedlist of those occamsfuncer vob datastructs such as affinetransformed triangle polygon, circle, text, set of lines with x and y endpoints and colors at each endpoint, etc.
+			mapObToBifraction may be updated 22050 times per second, but graphics normally updates around 20-100 times per second.
+		)
+		;vobGraphics
+		l(
+		)
+	)
+	/(
+		The self-modifying-by-forkEdit func, of the ignoredataFuncParam.
+		External systems can forkEdit its data section such as forkEditing f(R f(L systemState)).context.time .
+		The ignoredataFuncParam called on param p calls this func on f(cons itself p),
+		where itself is the f(ignoredataFuncParam data func).
+	)
+	F(
+		,igfp
+		/(
+			FIXME this isnt using getMyData in the right place???
+			The main problem with this is it gets a f(igfp data func) aka f(f(igfp data) func)
+			but is expecting to forkedit just the data part. I havent made a syntax for .L and .R
+			since the dot syntax is for keys, but L is a func to be called, not a key.
+			Also it would be good to practice organizing params when things dont fit perfectly,
+			to practice forkEditing the data but still returning the map.
+		)
+		context.testCount=F(
+			,+
+			,1
+			'when given the ignoredataFuncParam Im in (and I may be many places at once), gets the data in it'
+			?[F(,R L)@#getMyData].context.testCount
+		)
+		'when given the ignoredataFuncParam Im in (and I may be many places at once), gets the func in it'
+		R@#getMyFunc
+	)
+)

@@ -2,18 +2,22 @@
 package immutable.occamsfuncer.funcers;
 import java.io.OutputStream;
 
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
 
+/** I'm undecided if this should be a core type (in Data.coretype* ints and its own
+class instead of derived from maps lists etc but without the type).
+*/
 public class TypedObject extends AbstractFuncer{
 	
-	public final Funcer type, value;
+	public final Funcer type, val;
 
-	public TypedObject(short firstHeader, Funcer type, Funcer value, Funcer salt){
-		super(firstHeader, salt);
+	public TypedObject(Funcer type, Funcer val){
+		super((short)Data.coretypeTypedObject); //all mask bits 0
 		this.type = type;
-		this.value = value;
+		this.val = val;
 	}
 
 	public Funcer f(Funcer param){
@@ -37,7 +41,7 @@ public class TypedObject extends AbstractFuncer{
 	}
 
 	public Funcer R(){
-		return value;
+		return val;
 	}
 
 	public Funcer setSalt(Funcer salt){

@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 
+import immutable.occamsfuncer.funcers.todo;
+
 //import immutable.occamsfuncer.funcers.Funcall;
 //import immutable.occamsfuncer.storageAndCache.DataUtil;
 
@@ -64,11 +66,98 @@ public enum Opcode{
 	
 	
 	
+	/** creates a pair as in the occamsfuncerVM
+	such as an SCall or Call or ConsPair or SLinkedListPair or MapPair etc.
+	*
+	vmPair(4, (BinaryOperator<Funcer>)(Funcer L, Funcer itsR)->{
+		//f(Opcode.vmPair prototypeToGetCoretypeFrom itsL itsR)
+		Funcer prototypeToGetCoretypeFrom = L.L().R();
+		short firstHeader = prototypeToGetCoretypeFrom.firstHeader();
+		Funcer itsL = L.R();
+		switch(firstHeader){
+		case Data.coretypeCall:
+			throw new Error("TODO");
+		//break;
+		case Data.coretypeSCall:
+			throw new Error("TODO");
+		//break;	
+		default:
+			throw new Error("TODO");
+		}
+	}),*/
+	
+	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
+	car(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return evalInfiniteLoop(); //FIXME
+		//return (Funcer)null; //FIXME
+	}),
+	
+	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
+	cdr(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return evalInfiniteLoop(); //FIXME
+		//return (Funcer)null; //FIXME
+	}),
+	
+	/** Lx.Ly.Lz.zxy */
+	cons(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return evalInfiniteLoop(); //FIXME
+		//return (Funcer)null; //FIXME
+	}),
+	
+	/** like cons, except creates a coretypeCall pair (instead of a cons pair).
+	This is here for completeness, since you could just call f(func param) directly.
+	Its part of a set of ops which make all the coretype pairs.
+	* 
+	call(3, (BinaryOperator<Funcer>)(Funcer L, Funcer param)->{
+		$();
+		//f(Opcode.call func param) returns Call<func,param>
+		Funcer func = L.R();
+		//same as Call<func,param> if it doesnt have enough curries,
+		//and doing it this way prevents errors of creating Call where it should have already executed.
+		return func.f(param);
+	}),
+	
+	/** another coretype creator, for coretypeSCall *
+	sCall(3, (BinaryOperator<Funcer>)(Funcer L, Funcer getParam)->{
+		$();
+		//f(Opcode.call getFunc getParam) returns SCall<func,param> (or is it done in Call?)
+		Funcer getFunc = L.R();
+		return new SCall(getFunc, getParam);
+	}),
+	
+	/** another coretype creator, for coretypeSLinkedListPair *
+	sLinkedListPair(3, (BinaryOperator<Funcer>)(Funcer L, Funcer getItsCdr)->{
+		$();
+		//f(Opcode.sLinkedListPair getItsCar getItsCdr) returns SCall<func,param> (or is it done in Call?)
+		Funcer getItsCar = L.R();
+		return new SLinkedListPair(getItsCar, getItsCdr);
+	}),
+	
+	//...
+	//TODO an op for every coretype which creates it, so funcs can create funcs.
+	
+	
+	Data.java QUOTE
+		How about instead of that syntax for Smap and Savllist,
+		a general syntax V(getfunc getparama getparamb getparamc...)
+		that means F(getfunc L(getparama getparamb getparamc...))?
+	UNQUOTE.
+	*/
 	
 	
 	
 	
-	
+	/*
+	"Occamsfuncer will choose the int12 int12 ptrs and int8 op (points into [256]
+	of double double to double (which swaps bytes to match existing indexs
+	hardcoded in acyclicFlow optimization but this way not hardcoded.
+	As first testcase of this, port sparsedoppler to occamsfuncer
+	and use it in realtime with microphone. Generate it in a loop using occamsfuncer
+	instead of hardcoding that repetitive stuff." -- occamsfuncerAcyclicFlowOpWithint[]AndFuncer[256]Etc
+	*/ 
 	
 	
 	
@@ -132,7 +221,11 @@ public enum Opcode{
 		return (Funcer)null;
 	}),
 	
-	/** Example: f(? "plugin" "jstatic:java.lang.System.identityHashCode" l(someObject)))
+	/** TODO "f(?? ;plugin ;pluginName mapParam) including plugin for humanAiNetNeural"
+	is a name in mindmap.
+	<br><br>
+	OLD:
+	Example: f(? "plugin" "jstatic:java.lang.System.identityHashCode" l(someObject)))
 	or maybe it would be better to put jstatic as param of "ImportFunc/?"?
 	<br><br>
 	One way (thats not this opcode) to hook in a plugin is to put the params somewhere in the data
@@ -461,11 +554,11 @@ public enum Opcode{
 	with potentially different limits (can only limit to less, cant grab more).
 	This is related to econacyc and its variations (mindmap binufnodeSandboxingTypes).
 	*/
-	spend(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+	spend(6, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		long saveWallet = 0;
 		try{
-			//f(? "spend" returnThisIfFail maxSpend func param)
+			//f(?? "spend" returnThisIfFail maxSpend func param)
 			long requestedMaxSpend = (long)L.L().R().d();
 			Funcer func = L.R();
 			Funcer param = R;
@@ -585,7 +678,7 @@ public enum Opcode{
 	
 	/** This is replacing the kernel opcode etc. It will instead tell occamsfuncerVM to look for
 	certain optimizations (which it may do even without this) in f(func param)
-	where this is f(? "callWithOptimizationHints" optimizationHints func param)
+	where this is f(?? "callWithOptimizationHints" optimizationHints func param)
 	*/
 	callWithOptimizationHints(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
@@ -762,24 +855,6 @@ public enum Opcode{
 		throw new Error("TODO");
 	}),
 	
-	/** Lx.Ly.Lz.zxy */
-	cons(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
-		$();
-		throw new Error("TODO");
-	}),
-	
-	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
-	car(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
-		$();
-		throw new Error("TODO");
-	}),
-	
-	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
-	cdr(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
-		$();
-		throw new Error("TODO");
-	}),
-	
 	/** returns first curry after cons, if its param is a cons, else returns L of its param *
 	carElseL(1),
 	
@@ -936,7 +1011,52 @@ public enum Opcode{
 	Mathevo already does this maybe efficiently enough.
 	*/
 	
-	/** This is an optimization for realtime interactive music tools
+	/** This is an optimization for realtime interactive music tools,
+	anything which can be represented as a forest of unary or binary ops
+	that transform a double[] into another double[] (looping timeCycles times
+	before creating the output double[]), and with a double[timeCycles][inputs]
+	of inputs to feed into it each cycle, and with some state vars copied
+	from one cycle to the next. This can compute any npcomplete logic,
+	digital or analog circuit, existing music tool, etc,
+	and if you have around 1000 ops per cycle the whole thing fits in L1 CPU cache
+	such as to compute a sequence of 100 sound amplitudes at a time
+	with 22050 sound amplitudes per channel per second (or 44100 is "cd quality").
+	The builtin sound system is JSoundCard but thats not connected to this op
+	which only computes the numbers you might want to interact with jsoundcard etc.
+	<br><br>
+	Ive decided I want acyclicFlow op to use treelist wrapped double[] input and treelist
+	wrapped double[] output (so input could be any treelist even if doesnt contain double[],
+	but output will be ListLeafArray wrapping Leaf<double[]>) and to have a timeCycles and
+	inputs and outputs and states params like in acfloDirect32 AND to be a forest of calls
+	as in acfloForest AND to have a double[] used as a 2d array of timeCycles*inputs.
+	I dont want var names cuz this is just an optimized form not meant to be Human readable,
+	and as an optimized form its better to be simple. I want the forest of funcs
+	(such as ,sine or * or +, joined with S) cuz thats the more natural form for occamsfuncer
+	to edit funcs instead of having to process the int32<int12,int12,int8> kind of forest
+	which will instead be an internal optimization of occamsfuncerVM.
+	Opcode.callWithOptimizationHints wont be used since that will happen every time,
+	reusing cached optimizations, that Opcode.acyclicFlow is called.
+	TODO I will
+	<br><br>
+	timeCycles is used as integer. Example: 100 (of 22050 sound amplitudes per channel per second)
+	<br><br>
+	firstState is a treelist of double such as a ListLeafArray wrapping a Leaf<double[]>.
+	<br><br>
+	inputs2d is a treelist of double used as a 2d array[timeCycles][whichInput].
+	<br><br>
+	outputFuncs is a treelist of funcer<treelist<double>,double>.
+	Its size is number of outputs plus number of state vars (firstState size)
+	cuz those state vars with the next inputs are read by leafs in the forest of funcs
+	[which compute the next outputs and next states, and it does that timeCycles iterations.
+	<br><br>
+	f(?? ;acyclicFlowN sizeTimeCycles sizeInput sizeState sizeOutput firstState inputs2d outputFuncs)
+	<br><br>
+	Returns treelist of double to be used as 2d array[timeCycles][sizeOutput]
+	<br><br>
+	<br><br>
+	===OLD COMMMENTS BELOW===
+	<br><br>
+	This is an optimization for realtime interactive music tools
 	but may be more generally useful.
 	Its similar to Op.kernel except it normally runs in cpu instead of gpu
 	and does the same calculation many times sequentially.
@@ -990,10 +1110,71 @@ public enum Opcode{
 	and a final DoubleBinaryOperator object in each,
 	and run those in an array.
 	*/
-	acyclicFlow(5, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
-		$();
+	acyclicFlowN(9, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		//f(?? ;acyclicFlowN sizeTimeCycles sizeInput sizeState sizeOutput firstState inputs2d outputFuncs)
+		
+		$(); //cocst 1 before do anything, to avoid infiniteLoop
+		
+		//FIXME this must be variable cost, timeCycles*arraySize*smallConstant.
+		//Also if optimizations arent cached yet, cost for those.
+		long variableCost = 0; 
+		$(variableCost);
+		//
 		throw new Error("TODO");
 	}),
+
+	
+	/** Simpler form of acyclicFlowN, a music tools optimization.
+	<br><br>
+	inputNums is treelist of double such as ListLeafSingle wrapping Leaf<double[]>
+	<br><br>
+	outputFuncs is treelist of Funcer.
+	<br><br>
+	f(?? ;acyclicFlow inputNums outputFuncs)
+	<br><br>
+	Returns treelist of double same size as outputFuncs.
+	<br><br>
+	Normally you would define the last n doubles in each input as state vars
+	and the first n doubles in each output as the next values of those state vars
+	and caller would copy that range before calling this again in a loop.
+	<br><br>
+	That copying resists CPU caching so acyclicFlowN will be faster,
+	but this is simpler.
+	<br><br>
+	<br><br>
+	This is how I decided to create the acyclicFlow op (which lacks timeCycles)
+	after designing the acyclicFlowN op (which has timeCycles)...
+	<br><br>
+	FIXME in sparsedoppler (which has nearly as big a state as num of calculations)
+	would it be fast enough to do acyclicFlow just 1 cycle at a time and
+	copy to immutable double[] every time?
+	My laptop can copy 1 gB of memory (so 125m doubles) per second between
+	memory and CPU roundtrip. It does about 30m acyclicFlow ops per second
+	in int32<int12,int12,int8> form. At 22060 sound cycles per second,
+	if it did nothing else taking much CPU time (on that 1 CPU used for occamsfuncer,
+	cuz moving data between CPUs is laggier than 1 video frame so wont do it)
+	then thats 1360 acyclicFlow ops it can do for each sound amplitude (per channel).
+	Sparsedoppler just does a few multiplies and adds to simulate a vibrating 1d string
+	like a spring force between each 2 adjacent array indexs,
+	and then a norming step which is similarly fast.
+	Maybe thats 10 ops per index per sound cycle,
+	so could have an array of 136 string pieces which each have position and velocity,
+	so state would be a double[2*136=272],
+	and theres only 1 input and 1 output each time
+	which is microphone and speaker amplitude.
+	Allocating and garbageCollecting 22050 double[272] per second is about
+	6 million doubles and 48mB, and its probably 2-3 times more than that cuz
+	other copying ops will need to move state, inputs, and outputs around,
+	so 100mB to 150mB per second, far less than the 1gB the computer can do,
+	so the copying isnt the bottleneck,
+	so acyclicFlow doesnt need a timeCycles op or the extra params that come with it.
+	*/
+	acyclicFlow(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		//f(?? ;acyclicFlow inputNums outputFuncs) returns treelist<double>
+		//TODO
+		return evalInfiniteLoop(); //FIXME
+	}),
+	
 	
 	
 	
@@ -1345,7 +1526,31 @@ public enum Opcode{
 	isMap(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
-	});
+	}),
+	
+	/** f(?? ;mapPair lowChild highChild).
+	FIXME make sure to enforce the relations of size and key order between parent and 2 childs,
+	else return nil.
+	*/
+	mapPair(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return nil;
+		
+		todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	}),
+	
+	/** f(?? ;humanAiNetNeural mapOfParams)
+	call https://github.com/benrayfield/HumanAiNetNeural funcs such as RBM and LSTM,
+	both openCL/GPU optimized. Later hopefully I'll add general OpenCL and javassist optimizations,
+	or at least some kind of forest of opencl calls,
+	for any parallelizable occamsfuncer code, but for now this is an important thing to include.
+	*/
+	humanAiNetNeural(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return nil;
+		
+		todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	})
 	
 	//TODO bit shift ops on viewing float64 as int32 since it can represent all int32 values,
 	//similar to how javascript has int bitshift ops???

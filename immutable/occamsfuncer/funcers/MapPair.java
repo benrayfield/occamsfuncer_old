@@ -3,6 +3,7 @@ package immutable.occamsfuncer.funcers;
 
 import java.io.OutputStream;
 
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
@@ -11,18 +12,37 @@ import immutable.occamsfuncer.Opcode;
 
 /** treemap that lazyEvalHashes to same id for same set of key/value pairs
 regardless of order of adds and removes. Trigges lazyEvalHash of keys but not values.
+<br><br>
+f(?? ;mapPair size minKey maxKey minChild maxChild)
+where minChild and maxChild are LDeep() and RDeep(). 
 */
 public class MapPair extends AbstractCollectionPair{
 	
 	/** min key is minKey.id(). max key is maxKey.id() */
 	public final Funcer minKey, maxKey;
 	
-	public MapPair(short firstHeader, Funcer salt, long maplistSize, Funcer minChild, Funcer maxChild, Funcer minKey, Funcer maxKey){
-		super(firstHeader, salt, maplistSize, minChild, maxChild);
-		this.minKey = minKey;
-		this.maxKey = maxKey;
+	public MapPair(Funcer minChild, Funcer maxChild){
+		super(
+			(short)Data.coretypeMapPair, //all mask bits 0
+			minChild.maplistSize()+maxChild.maplistSize(),
+			minChild,
+			maxChild
+		);
+		minKey = minChild.minKey();
+		maxKey = maxChild.maxKey();
+		if(maplistSize < 0) throw new Error(
+			"size doesnt fit in long: "+minChild.maplistSize()+" + "+maxChild.maplistSize());
 	}
 	
+	public Funcer expand(){
+		return Opcode.mapPair.ob.f(maplistSize).f(minKey).f(maxKey).f(LDeep).f(RDeep);
+	}
+	
+	/** occamsfuncerRedesignToMakeSLinkedListEtcConsistentAndUrbitlike */
+	public Funcer L(){
+		return new Call(Opcode.mapPair.ob, RDeep);
+	}
+		
 	/** map is func of key to value */
 	public Funcer f(Funcer param){
 		return get(param);
@@ -136,5 +156,27 @@ public class MapPair extends AbstractCollectionPair{
 	public int contentLen(){
 		throw new Error("TODO");
 	}
+	
+	todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	
+	
+	TODO do this in MapPair, MapSingle, AvlTreelistPair, listsingle, etc...
+	2019-7-14 chooseBhDesignOfMappairMapsingleMinkeyEtc QUOTE
+	UPDATE: I want it to be f(mapPair size mapPair minKey maxKey minChild maxChild)
+	(or some order of those params) cuz there must not be any hidden data (such as minKey
+			and size. Make it return nil if those params dont obey the allowed relations
+					of size and key order.
+			...
+			NO TO THIS... SOLUTION, from below QUOTE
+			mapPair is represented as: f(mapPair minChild maxChild).
+			mapSingle is represented as: f(mapSingle key value).
+			That way, the size and minKey and maxKey are technically derivable from the bh(int),
+			including that you have to read the f(?? "mapPair") etc, but in practice it will almost
+			always be done using minKey and maxKey and size funcs which get it directly from the mapPair
+			and mapSingle and mapEmpty datastructs instead of deriving it the slow way from the whole 
+			tree at once (which those datastructs cache).
+			UNQUOTE.
+			UNQUOTE.
+
 
 }

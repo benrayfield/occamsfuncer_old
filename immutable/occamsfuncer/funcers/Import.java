@@ -3,9 +3,12 @@ package immutable.occamsfuncer.funcers;
 import static immutable.occamsfuncer.ImportStatic.nil;
 
 import java.io.OutputStream;
+
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
+import mutable.occamsfuncer.memstat.MemStat;
 import immutable.occamsfuncer.HaltingDictator;
 
 public class Import implements Funcer{
@@ -14,13 +17,16 @@ public class Import implements Funcer{
 	
 	public final Id id = Id.id(this);
 	
-	private  Import(){}
+	public final MemStat mem = HaltingDictator.newMemStat();
+	
+	public static final short firstHeaderOfImport = (short)(Data.coretypeImport); //all mask bits 0
+	
+	private Import(){}
 	
 	public Funcer f(Funcer param){
-		short firstHeader = 0; //FIXME
 		//Call.java checks for TheImportFunc and caches Opcode leftmostOp and curries.
 		//TheImportFunc takes 1 param before knowing how many curries.
-		return new Call(firstHeader, nil, this, param);
+		return new Call(this, param);
 	}
 	
 	/** no fp ops */
@@ -173,5 +179,13 @@ public class Import implements Funcer{
 
 	public int compareTo(Object o){
 		throw new Error("TODO");
+	}
+
+	public int dimSize(int dimIndex){
+		throw new Error("TODO");
+	}
+
+	public MemStat mem(){
+		return mem;
 	}
 }

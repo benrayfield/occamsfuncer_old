@@ -1,6 +1,10 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
 
+import java.util.function.Supplier;
+
+import mutable.occamsfuncer.memstat.MemStat;
+
 /** workaround for lack of halting oracle (which is impossible math to ever exist).
 Every program halts when it runs out of compute resources, recursively limited
 by Spend calls inside Spend calls which can be as deep as the java stack allows
@@ -33,8 +37,10 @@ public class HaltingDictator extends RuntimeException{
 	//TODO permissions map (which can only shrink in deeper calls) generalize strict, topWallet, etc?
 	//Maybe but not for topWallet etc cuz thats mutable even though it can only decrease during deeper calls.
 	
-	/** set by some opcode that makes deeper calls be strict, similar to how Opcode.spend affects topWallet */
-	public static boolean topIsStrict;
+	/** Starts true, but in most uses it will probably be quickly set to false since thats more efficient.
+	Set by some opcode that makes deeper calls be strict, similar to how Opcode.spend affects topWallet.
+	*/
+	public static boolean topIsStrict = true;
 	
 	/** This is the amount available to the current running Funcer and whatever it calls recursively
 	UNTIL an Opcode.spend is called which moves some of this into a local var
@@ -61,6 +67,14 @@ public class HaltingDictator extends RuntimeException{
 	or (very slow, objects^2 bigO) fullEconacyc, etc.
 	*/
 	public static long topWallet;
+	
+	/** TODO there should be a Supplier<MemStat> in boot call to occamsfuncer
+	but that would have to happen before static Funcers are createdsuch as ImporStatic.nil.
+	When thats done, this func will return from that Supplier.
+	*/
+	public static MemStat newMemStat(){
+		throw new Error("TODO");
+	}
 	
 	/** TODO MAKE THIS AN OPTION.
 	nanoseconds since year 1970 UTC. Every funcer created pays to topWallet to

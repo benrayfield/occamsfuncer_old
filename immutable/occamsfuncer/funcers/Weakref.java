@@ -28,7 +28,7 @@ public class Weakref extends AbstractFuncer{
 	Creates weakref id (id of a recognizer-func of it) if its a non-weakref.
 	*/
 	public Weakref(Id myIdOrTargetsId){
-		super((short)0,nil); //FIXME use same header bits as in target except the weakref bit
+		super((short)((myIdOrTargetsId.idA>>>48)|Data.maskIsWeakref)); //high 16 bits of this.id
 		this.id = myIdOrTargetsId.setWeakref(true);
 	}
 	
@@ -52,6 +52,10 @@ public class Weakref extends AbstractFuncer{
 	
 	public Funcer setSalt(Funcer salt){
 		throw new Error("TODO since Weakref.java is an optimization of a funcer that returns 1 if its param is a certain funcer else returns 0, but only if that funcer is not a weakref and this weakref has nil salt, then there needs to either be a GeneralWeakref.java to handle those which doesnt fit in id or this would return a combo of funcers that does the same thing BUT that wouldnt be this weakref with salt that would be some other funcer with that salt so the setSalt func maybe should work with another func canSalt() which would be false for leafs and weakrefs and true everywhere else.");
+	}
+	
+	public Funcer expand(){
+		return this;
 	}
 
 	public Funcer L(){

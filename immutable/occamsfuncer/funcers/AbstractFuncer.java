@@ -7,9 +7,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import immutable.occamsfuncer.Funcer;
+import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
 import immutable.util.BitsUtil;
+import mutable.occamsfuncer.memstat.MemStat;
 
 public abstract class AbstractFuncer<T> implements Funcer<T>{
 	
@@ -23,26 +25,17 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 	
 	protected Id id;
 	
-	/** in syntax the salt is after @
-	such as f(?? "plus")@saltOfThisPlus#nameOfThisPlus
-	or such as f(?? "plus")@#saltAndNameOfThisPlus when salt and name happen to be same whitespaceless string,
-	and ?? is TheImportFunc.
-	*/
-	public final Funcer salt;
+	protected MemStat mem;
 	
 	//protected WeakReference<Funcer<T>> vmInternal_javaWeakReferenceToMe;
 	
-	public AbstractFuncer(short firstHeader, Funcer salt){
+	public AbstractFuncer(short firstHeader){
 		this.firstHeader = firstHeader;
-		this.salt = salt;
 	}
 	
-	public Funcer salt(){
-		return salt;
-	}
-	
-	public boolean canSalt(){
-		return true;
+	public MemStat mem(){
+		if(mem == null) mem = HaltingDictator.newMemStat();
+		return mem;
 	}
 	
 	/*public WeakReference<Funcer<T>> vmInternal_javaWeakReferenceToMe(){
@@ -82,5 +75,14 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 	public int dimSize(int dimIndex){
 		throw new Error("TODO");
 	}
+	
+	/** MOVED TO WITHSALT.JAVA:
+	in syntax the salt is after @
+	such as f(?? "plus")@saltOfThisPlus#nameOfThisPlus
+	or such as f(?? "plus")@#saltAndNameOfThisPlus when salt and name happen to be same whitespaceless string,
+	and ?? is TheImportFunc.
+	*
+	public final Funcer salt;
+	*/
 
 }

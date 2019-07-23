@@ -1,6 +1,8 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
 import java.io.OutputStream;
+
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.ImportStatic;
@@ -11,10 +13,10 @@ This is needed cuz MapPair and MapSingle cant represent an empty map.
 */
 public class MapEmpty extends AbstractFuncer{
 	
-	public static final MapEmpty instance = new MapEmpty((short)0,ImportStatic.nil); //FIXME shortHeader
+	public static final MapEmpty instance = new MapEmpty();
 
-	public MapEmpty(short firstHeader, Funcer salt){
-		super(firstHeader, salt);
+	public MapEmpty(){
+		super((short)Data.coretypeMapEmpty); //all mask bits 0
 		// TODO Auto-generated constructor stub
 	}
 
@@ -24,6 +26,10 @@ public class MapEmpty extends AbstractFuncer{
 
 	public Funcer fStrict(Funcer param){
 		throw new Error("TODO");
+	}
+	
+	public Funcer expand(){
+		return this;
 	}
 
 	public void content(OutputStream out){

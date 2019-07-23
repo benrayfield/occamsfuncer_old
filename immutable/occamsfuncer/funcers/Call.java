@@ -4,6 +4,7 @@ package immutable.occamsfuncer.funcers;
 import java.io.OutputStream;
 
 import immutable.occamsfuncer.CacheFuncParamReturn;
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
@@ -59,7 +60,12 @@ public class Call extends AbstractFuncer{
 	public static final byte noCur = maxCur+1;
 	
 	
-	/** f(x y) is a normal funcall.
+	/** TODO will this class be shared among multipler coretypes such as:
+	coretypeCall
+	coretypeSCall
+	coretypeConsPair (represents f(cons a b) but unlike that its L returns a and R returns b.
+	...
+	f(x y) is a normal funcall.
 	...
 	F(x y) is an sCurryFuncall meaning f(s x y) aka f(f(s x) y)
 	until it has enough curries for the f(...) it returns (TODO design incomplete)
@@ -97,8 +103,9 @@ public class Call extends AbstractFuncer{
 	(its infinitely slow if you dont know how to do it ever)
 	and if nonstrictMode then also float roundoff and order of parallel multiplies adds etc.
 	*/
-	public Call(short firstHeader, Funcer salt, Funcer x, Funcer y){
-		super(firstHeader, salt);
+	public Call(Funcer x, Funcer y){
+		super((short)Data.coretypeCall); //got rid of the S coretypes so theres only 1 Call type
+		//super((short)coretype); FI XME coretype varies cuz this class can be SCall
 		if(x == Import.instance){
 			//This rarely happens compared to the ELSE
 			//cuz once you have such a func its normally reused many times.
@@ -115,6 +122,75 @@ public class Call extends AbstractFuncer{
 		this.x = x;
 		this.y = y;
 	}
+	
+	/*ocfnRedesignToHaveOnly1CallTypeNoSCallSLinkedListNodeEtcTypes QUOTE
+		TODO implement SLinkedListNode and SCall and NormalCall here (different coretypes).
+		There will not be coretypes for SMapPair and SAvlListNode cuz those are just sequence of forkedits.
+		
+		TODO should there be STypedObject? SWithSalt?
+				
+		SWithSalt might complicate things.
+		
+		Technically it appears (TODO verify) I could use only a single Call type
+		and literally store the S'es in things, and it would be harder to display
+		but I could find a way, EXCEPT that single Call type would not include the datastructs
+		of MapPair, AvlListPair, etc, and map returns value when key is param.
+		It might be worth it to have only 1 call type.
+		This would mean getting rid of ALL the S-coretypes and instead literally using S.
+		Maybe also including ConsPair? No, ConsPair will still be a coretype
+		that happens to be returned by f(?? "cons" x y) returns ConsPair<x,y>
+		and ConsPair<x,y> is a func that given param z evals f(z x y),
+		unlike in churchEncoding f(cons x y z) evals f(z x y)
+		but will for practical purposes work the same
+		and only in certain abstractions will anything have to be done differently.
+		
+		Im decided there will be "ab[cd].e.f[gh]=f(...)" syntax but undecided if needs its own datastruct
+		since its just a wrapper for ops getdeep and putdeep on funcs that take map and return map.
+		Im decided K wont have a special datastruct but will have the "," syntax.
+		Im decided not to include special datastruct or syntax for S-map or S-avl-treelist.
+		Im decided coretypeHttpBytes will not have special datastruct. 
+		Im undecided how to do the S-types for F(...s-funcalls...) and L(...s-linkedlist...).
+		Im undecided if TypedObject will have an S form or special syntax.
+		Im undecided if WithSalt will have an S form or special syntax.
+		
+		Im extremely wanting to have only 1 Call type (other than datastructs like mappair and conspair)
+		BUT im skeptical it can be done efficiently.
+		
+		I could get rid of TypedObject and coretypeHttpBytes and not replace them,
+		and get rid of WithSalt by putting salt (default is nil) in most object types,
+		or I could keep just WithSalt of that and create an S syntax for it
+		similar to the S syntax for linkedlist and funcall.
+		
+		So the big question, that decides if theres just 1 main call type, is...
+		Whats the expanded S form of F(a L(b c d) e) and is it too big?
+		Its the expanded form of F(a expandedLbcd e), which is (not expanding expandedLbcd yet):
+		F(F(a expandedLbcd) e)
+		f(s f(s a expandedLbcd) e)
+		f(f(s f(f(s a) expandedLbcd)) e)
+		Thats not too big. As long as the form in memory tostrings as "F(a L(b c d) e)" its ok.
+		Next, whats the expanded form of L(b c d)?
+		L(b c d) is a func that, f(L(b c d) p) returns l(f(b p) f(c p) f(d p)) aka a linkedlist of
+		what those 3 things eval to. Linkedlist is made of conspair<cp>, so it returns:
+		cp<f(b p),cp<f(c p),cp<f(d p),nil>>>.
+		What returns that?
+		f(cons x y) returns cp<x,y>.
+		f(L(b c d) p) returns cp<f(b p),cp<f(c p),cp<f(d p),nil>>>, but how?
+		Whats the S form of L(b c d) (aka expandedLbcd) which does that?
+		F(,cons b F(,cons c F(,cons d ,nil))). Is that it? (Its not fully expanded until theres f but no F)
+		Does f(F(,cons b F(,cons c F(,cons d ,nil))) p) return cp<f(b p),cp<f(c p),cp<f(d p),nil>>>?
+		Probably so, but todo verify.
+		Even if I got the exact form wrong, its not extremely big. Its doable.
+		...
+		Therefore normal funcall will be the ONLY kind of funcall, with no S-coretypes,
+		AND there will be syntax (autodetected from object shape) that makes combos of S etc
+		look like "F(a L(b c d) e)". Cuz otherwise it gets really complex for func to build func.
+		Parts will still be optimized as opencl and javassist.
+		...
+		Displayability in these various forms will be cached separately from these objects
+		instead of representing, forexample, that something is an SCall or SLinkedListNode
+		as which coretype.
+	UNQUOTE.
+	*/
 	
 	public Opcode leftmostOp(){
 		return leftmostOp;

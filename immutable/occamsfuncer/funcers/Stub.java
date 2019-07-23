@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
+import mutable.occamsfuncer.memstat.MemStat;
 
 /** wraps a Funcer claimed to exist somewhere but we dont have it here yet.
 When it gets here, such as from harddrive or Internet, its the Supplier<Funcer>'s
@@ -81,6 +82,10 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 	
 	public Funcer fStrict(Funcer param){
 		return unstub().fStrict(param);
+	}
+	
+	public Funcer expand(){
+		return unstub().expand();
 	}
 
 	public Funcer prex(Funcer startExcl){
@@ -163,24 +168,20 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 		return unstub().cur();
 	}
 
-	public Funcer<LeafType> setSalt(Funcer salt){
-		return unstub().setSalt(salt);
-	}
-	
-	public boolean canSalt(){
-		return unstub().canSalt();
-	}
-	
-	public Funcer salt(){
-		return unstub().salt();
-	}
-
 	public void content(OutputStream out){
-		throw new Error("TODO");
+		unstub().content(out);
 	}
 
 	public int contentLen(){
-		throw new Error("TODO");
+		return unstub().contentLen();
+	}
+
+	public int dimSize(int dimIndex){
+		return unstub().dimSize(dimIndex);
+	}
+
+	public MemStat mem(){
+		return unstub().mem();
 	}
 
 }

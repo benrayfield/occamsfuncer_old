@@ -120,22 +120,24 @@ public final class Id implements Comparable<Id>{
 	0 for literal that fits in id (such as a small string or double or float[5] or float[2][2]).
 	*/
 	public boolean isHash(){
-		return (idA&(1L<<63))!=0;
+		return ((idA>>>48)&Data.maskIsHash)!=0;
+		//return (idA&(1L<<63))!=0;
 	}
 	
 	/** bit index 1 is 1 for weakref (of the id with that bit flipped), 0 for normal */
 	public boolean isWeakref(){
-		return (idA&MaskIndex.weakrefMask)!=0;
+		return ((idA>>>48)&Data.maskIsWeakref)!=0;
 	}
 	
 	public boolean equalsIgnoringWeakrefBit(Id i){
-		long mask = ~MaskIndex.weakrefMask;
+		long mask = ~(((long)Data.maskIsWeakref)<<48);
 		return (idA&mask)==(i.idA&mask) && idB==i.idB && idC==i.idC;
 	}
 	
 	public Id setWeakref(boolean becomeWeakref){
 		if(isWeakref() == becomeWeakref) return this;
-		return new Id(becomeWeakref ? (idA|MaskIndex.weakrefMask) : (idA&~MaskIndex.weakrefMask), idB, idC);
+		long wr = ((long)Data.maskIsWeakref)<<48;
+		return new Id(becomeWeakref ? (idA|wr) : (idA&~wr), idB, idC);
 	}
 	
 	/** As Comparable, Id is 192 bit unsigned integer (despite java longs being signed). */
@@ -179,18 +181,14 @@ public final class Id implements Comparable<Id>{
 	It would be most efficient if Id instanceof Funcer, but I'm unsure if that breaks constraints.
 	*/
 	public Funcer<int[]> asFuncer(){
-		int todoWhatHeader = 0; //FIXME
-		return new Leaf<int[]>(
-			todoWhatHeader,
-			nil,
-			new int[]{
-				(int)(idA>>>32),
-				(int)idA,
-				(int)(idB>>>32),
-				(int)idB,
-				(int)(idC>>>32),
-				(int)idC}
-		);
+		return Leaf.wrap(new int[]{
+			(int)(idA>>>32),
+			(int)idA,
+			(int)(idB>>>32),
+			(int)idB,
+			(int)(idC>>>32),
+			(int)idC
+		});
 	}
 	
 	/*replaced by a func that returns byte[]

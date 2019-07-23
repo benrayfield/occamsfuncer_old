@@ -4,20 +4,27 @@ import static immutable.occamsfuncer.ImportStatic.*;
 
 import java.io.OutputStream;
 
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
+import mutable.occamsfuncer.memstat.MemStat;
 
 /** optimization of Leaf when value is a double and salt is ImportStatic.nil. */
 public final class Num implements Funcer<Double>{
 	
-	public final double v;
+	public final double val;
 	
 	private Id id;
 	
-	public Num(double v){
-		this.v = v;
+	private MemStat mem;
+	
+	public static final short firstHeaderOfNum =
+		(short)(Data.maskIsScalar | Data.maskIsSigned | Data.coretypeLeaf);
+	
+	public Num(double val){
+		this.val = val;
 	}
 	
 	public Funcer f(Funcer param){
@@ -25,6 +32,10 @@ public final class Num implements Funcer<Double>{
 	}
 	
 	public strictfp Funcer fStrict(Funcer param){
+		return this;
+	}
+	
+	public Funcer expand(){
 		return this;
 	}
 
@@ -45,7 +56,7 @@ public final class Num implements Funcer<Double>{
 	}
 
 	public short firstHeader(){
-		return 0; //FIXME what constant header should a Leaf of double and salt=nil have? Its not 0.
+		return firstHeaderOfNum;
 	}
 
 	public long maplistSize(){
@@ -60,18 +71,6 @@ public final class Num implements Funcer<Double>{
 		return nil;
 	}
 
-	public Funcer salt(){
-		return nil;
-	}
-	
-	public boolean canSalt(){
-		return false;
-	}
-
-	public Funcer<Double> setSalt(Funcer salt){
-		return salt==nil ? this : new Leaf(firstHeader(), salt, v);
-	}
-
 	public Funcer minKey(){
 		throw HaltingDictator.throwMe;
 	}
@@ -81,7 +80,7 @@ public final class Num implements Funcer<Double>{
 	}
 
 	public Double v(){
-		return v;
+		return val;
 	}
 
 	public Opcode leftmostOp(){
@@ -172,6 +171,16 @@ public final class Num implements Funcer<Double>{
 
 	public int contentLen(){
 		throw new Error("TODO");
+	}
+
+	public int dimSize(int dimIndex){
+		if(dimIndex==0) return 64; //double is bit[64]
+		throw new IndexOutOfBoundsException("dim"+dimIndex);
+	}
+	
+	public MemStat mem(){
+		if(mem == null) mem = HaltingDictator.newMemStat();
+		return mem;
 	}
 
 }

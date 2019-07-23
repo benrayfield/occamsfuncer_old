@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
 import immutable.occamsfuncer.funcers.Import;
+import mutable.occamsfuncer.memstat.MemStat;
 
 /*IMPORTANT!!!!!!!!!!!!
 I am going to start using merkleforest soon, today is 2019-4-10 (if can get few parts built).
@@ -182,6 +183,25 @@ it has from the int mask/header which is in java memory, and you can ask for exa
 */
 public interface Funcer<LeafType> extends Comparable<Funcer>{
 	
+	/** This is the ONLY mutable part of Funcer.
+	MUTABLE memory statistics, especially fullEconacyc, zapeconacyc,
+	and maybe timing and storage capacity of harddrive, internet storage of Funcers,
+	and maybe memlock (keep in memory not harddrive), etc,
+	and maybe multiple (small number of) groups of each of those.
+	This is the only mutable part of a Funcer.
+	To save mem, it doesnt know which Funcer its the stat of and instead
+	takes Funcer as param to update the stats, and Funcer knows its MemStat,
+	even though Funcer is immutable in every other way except pointing at a MemStat.
+	Since kinds of stats vary in efficiency (like zapeconacyc requires a ChanceTree
+	of reverse pointers per Funcer), MemStat will have various subclasses).
+	Stats on compute cycles are done in HaltingDictator (TODO move it into mutable package).
+	*/
+	public MemStat mem();
+	
+	public default Funcer f(Funcer param){
+		return HaltingDictator.topIsStrict ? fStrict(param) : fNonstrict(param);
+	}
+	
 	/** this as lambda function. Examples: the s and k Opcodes, and a Map takes key as param
 	and returns value else returns nil if not found, and a leaf ignores its param and returns itself,
 	and an avl-list takes list index as key and returns value at that index.
@@ -189,7 +209,7 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	Lambda, except limited recursively by allowed compute and memory as defined
 	in HaltingDictator.topWallet etc.
 	*/
-	public Funcer f(Funcer param);
+	public Funcer fNonstrict(Funcer param);
 	
 	/** the strict mode form of f(Funcer). It must use strictfp java keyword (if implemented in java,
 	else the same strictness of IEEE754 scalar math however you implement it.
@@ -223,7 +243,6 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	(TODO rounded up to the next byte if not a multiple of 8?), aka a tensor.
 	*/
 	public int dimSize(int dimIndex);
-	TODO get java code for multiformatsVarint
 
 	/** for merkle hashing into my id, write the content to be hashed,
 	just my few local vars, not recursively into other Funcers I can reach but include their ids.
@@ -251,103 +270,122 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	
 	public long maplistSize();
 	
+	/** Same as bh(2). This generates on observe (lazyEval) unless LDeepIndex()==2. See comment in bh(int).
+	For efficiency, LDeep() and RDeep() are used far more often than L() and R().
+	*/
 	public Funcer L();
 	
+	/** Same as bh(3). This generates on observe (lazyEval) unless RDeepIndex()==3. See comment in bh(int).
+	For efficiency, LDeep() and RDeep() are used far more often than L() and R().
+	*/
 	public Funcer R();
 	
-	/** This is to make a funcer uniquely namable even though it does the exact same thing as another funcer,
-	such as this way of naming (something that does the same as) R allows you to name it multiple things
-	instead of just lastParam, and to name F(L R) things other than secondLastParam.
-	This affects id, while the /(...) and '' comments and #names go in separate maps
-	so you can change them separately without changing the ids of the functions they are comments and names of.
+	/** optimization of bh(LDeepIndex()). See comment in bh(int).
+	For efficiency, LDeep() and RDeep() are used far more often than L() and R().
+	*/
+	public Funcer LDeep();
 	
-	DO THIS: occamsfuncerNameSaltingJust1LevelDeep
-	AND IF SOMEDAY WANT UPGRADE TO RECURSIVE SALTING DO THIS: occamsfuncerNameSaltingRecursivelyFastByCopyingJustTheTopNodeOfTheFuncAtTheBottomAndDefiningItsSaltFieldAsTheNextLowerObjectAndItsSaltIsSoOnRecursively
-	BUT NEVER DO IT THE SLOW WAY: occamsfuncerNameSaltingRecursivelyTheSlowWayThatCallsRecursivelyIntoSaltWrapperIntoSaltWrapperAndSoOn
+	/** optimization of bh(RDeepIndex()). See comment in bh(int).
+	For efficiency, LDeep() and RDeep() are used far more often than L() and R().
+	*/
+	public Funcer RDeep();
 	
-	FIXED IT (occamsfuncerNameSaltingJust1LevelDeep):
-	;mindmapSearch
-	/(
-		Func of 2 params: mindmapContentMap string query to treelist (v or a) of keys in that map, best first.
-		f(`` thisFunc paramA paramB) aka f(f(f(`` thisFunc) paramA) paramB)
-	)
-	f(
-		``
-		F(
-			'FIXED the need for recursive saltNaming, just dont do it, just write it 1 level deep like this:'
-			F(L R)@#mmContentMap
-			R@#mmQuery
-
-			"TODO"
-		)
-	)
+	/**  See comment in bh(int). */
+	public default int LDeepIndex(){ return 2; }
 	
-	DONT DO THIS[
-		/(
-			;paramGetters
-			l(
-				R@#lastParam
-				
-				'Example: in a func of 2 params gets it from f(f(f(`` thisFunc) paramA) paramB). You can get secondLastParam by reusing this in other funcs.'
-				F(L R)@#secondLastParam
-				
-				F(L L R)@#thirdLastParam
-				
-				F(L L L R)@#fourthLastParam
-			)
-		)
-	]
+	/**  See comment in bh(int). */
+	public default int RDeepIndex(){ return 3; }
 	
+	/** expanded view that bh(int) sees. For example, bh(0b10) returns expand().L(), and bh(0b11) returns ewxpand().R(), and deeper.
+	expand(0b1) returns this. If LDeepIndex()==2 && RDeepIndex()==3 then always returns this.
+	*/  
+	public default Funcer expand(){ return this; }
 	
-	;mindmapSearch
-	/(
-		Func of 2 params: mindmapContentMap string query to treelist (v or a) of keys in that map, best first.
-		f(`` thisFunc paramA paramB) aka f(f(f(`` thisFunc) paramA) paramB)
-	)
-	f(
-		``
-		F(
-			FIXME I want a place in every object to put an arbitrary string (or general object?),
-			considered a comment thats part of the data, so I dont have to do this:
+	/** Each node stores 2 main childs, but they're not always the direct L and R.
+	For example, a conspair represents f(cons itsLDeep itsRDeep) aka f(f(cons itsLDeep) itsRDeep)
+	so R is itsRDeep, but L is f(cons itsLDeep) so would generate that when observed.
+	LDeep() returns itsLDeep(). without creating f(cons itsLDeep)
+	since itsLDeep and itsRDeep are stored directly but L and R are normally not stored directly.
+	There are more complex structures such as MapPair stores minKey, maxKey, minChild, maxChild, and long size.
+	Its minChild and maxChild are its LDeep and RDeep. All are reachable by bh(int)
+	since (TODO) every node type will be represented as a forest of Call but only when observed
+	as it will actually be storing mainly LDeep and RDeep and in some node types a few extra things.
+	<br><br>
+	get L R R L L... by BinHeapIndex (bh),
+	like THIS is 1, L is 2, R is 3, LL is 4, LR is 5, RL is 6, and so on,
+	similar to the binheap indexing in Urbit but limited to int.
+	The default implementation is slow compared to that subclasses should probably override this.
+	<br><br>
+	occamsfuncerRedesignToMakeSLinkedListEtcConsistentAndUrbitlike.
+	QUOTE Replace L and R with int binheap indexing, and have 2 const ints telling
+	which are actually stored per sCallType vs are generated when observed.
+	Make absolutely everything Call. Like mappair is a call on 2 child's.
+	But store same way. Is minKey func consistent with that? Binheap indexing
+	like in urbit but only int not caring (FIXME spellcorrectedwrong).
+	Also implement urbit completely as a coretype(s) andor ops (???), bit level
+	urbit compatibility since urbit is similar and pure deterministic and has sk
+	or at least something very similar and is all pairs and integers. I therefore
+	gain existing urbit software and keep my software which if nonstrict allows
+	roundoff and better optimizations. I'm undecided if I want urbit ops but I do
+	at least want the binheap indexing instead of L and R and for each node to say
+	which 2 ints (2 is L and 3 is R and 1 is THIS, etc) are the 2 child pointers it
+	actually stores vs would have to generate others.
+	UNQUOTE
+	*/
+	public default Funcer bh(int binheapIndex){
+		if(binheapIndex == 1) return this;
+		if(binheapIndex == LDeepIndex()) return LDeep();
+		if(binheapIndex == RDeepIndex()) return RDeep();
+		if(binheapIndex < 1) throw new Error("binheapIndex="+binheapIndex);
+		TODO use expand() and recurse into bh since once expanded it wont expand the same part again
+		and will return a this.
 		
 		
-			'I put in igfp instead of using F(L R) directly so I could name this specific thing secondLastParam without naming every F(L R) that. FIXME Im unsure if this will optimize well enough.'
-			(igfp "secondLastParam" F(L R))#secondLastParam
-			(igfp "lastParam" R)#lastParam
-			"TODO"
-		)
-	)
-	So instead it would be written something like...
-	F(L R)@secondLastParam#secondLastParam
-	and in cases when the @ and # are equal write it this way:
-	F(L R)@#secondLastParam
-	You might give it nil @ in which case you dont write @ at all like F(L R)#secondLastParam,
-	or you might give it an arbitrary @ in which case you write it like:
-	F(L R)@553453453#secondLastParam
-	*/
-	public Funcer salt();
+		/*if(binheapIndex == 1) return this;
+		if(binheapIndex == LDeepIndex()) return LDeep();
+		if(binheapIndex == RDeepIndex()) return RDeep();
+		if(binheapIndex < 1) throw new Error("binheapIndex="+binheapIndex);
+		if((binheapIndex&2)==0){
+			return L().bh(binheapIndex>>1);
+		}else{
+			return R().bh(binheapIndex>>1);
+		}
+		*/
+		
+		FIXME theres an extra 1 as high bit which this shouldnt be recursing but is correctly part of binheapIndex.
+		FIXME test this with a few recursions
+	}
 	
-	/** true if x.setSalt(y).salt()==y, false if salt is always nil.
-	Examples of nonsaltable classes: Weakref, TheImportFunc. TODO Leaf shouldnt be saltable?
-	*/
-	public boolean canSalt();
 	
-	/** Returns this forkEdited to have the given salt. TODO create Num.java thats just a double
-	and doesnt store header or salt and its salt is always NIL, and if setSalt on that get a Leaf.java
-	of that same double with the chosen salt.
-	*/
-	public Funcer<LeafType> setSalt(Funcer salt);
+	public default Funcer<LeafType> setSalt(Object salt){
+		return setSalt(wr(salt));
+	}
 	
 	/** in a map, the min key is minKey().id(). Everywhere else this does HaltingDictator.evalInfiniteLoop() */
 	public Funcer minKey();
 	
+	/** Since each MapPair, MapSingle, and MapEmpty (and AvlList*) knows its maplistSize(),
+	its nth key binarySearchable like a treelist's literal (value of key, not nth key) keys.
+	*/
+	public default Funcer nthKey(long n){
+		long siz = maplistSize();
+		if(n < 0 || siz <= n) return nil;
+		Funcer L = L(), R = R();
+		long lSiz = L.maplistSize();
+		return n<lSiz ? L.nthKey(n) : R.nthKey(n-lSiz);
+	}
+	
 	/** in a map, the max key is maxKey().id(). Everywhere else this does HaltingDictator.evalInfiniteLoop() */
 	public Funcer maxKey();
 	
-	//leaf value. Examples: float[][][][][], Double, int[][], byte[] (could be generalText or semanticText, depending on int header)
+	/** leaf value. Examples: float[][][][][], Double, int[][],
+	byte[] (could be generalText or semanticText, depending on short firstHeader()).
+	*/
 	public LeafType v();
 	
-	/** same as ((Number)v()).doubleValue() except if its not a Number (such as Double or Integer) then returns 0 */
+	/** same as ((Number)v()).doubleValue() except if its not a Number (such as Double or Integer) then returns 0.
+	This should usually be overridden for efficiency.
+	*/
 	public default double d(){
 		LeafType leaf = v();
 		return (leaf instanceof Number) ? ((Number)leaf).doubleValue() : 0.;
@@ -380,8 +418,13 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	/** may trigger lazyEval of hashing many Funcers below to get their ids, but will remember Id of each after that */
 	public Id id();
 	
-	/** opposite of Mask.hashMask */
-	public boolean contentFitsInId();
+	/** Even if this is a weakref, its content still fits in id
+	since its a func that recognizes (returns 1 else 0 if) if its param is
+	that id with the weakref bit 0 (recognizes the non-weakref form of itself).
+	*/
+	public default boolean contentFitsInId(){
+		return (firstHeader()&Data.maskIsHash)!=0;
+	}
 	
 	/** Mask.weakrefMask */
 	public default boolean isWeakref(){
@@ -392,9 +435,12 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	such as Stub.java may download a Funcer from harddrive or Internet using a Supplier<Funcer>,
 	then returns the wrapped Funcer in case you want to use it directly instead of
 	less efficiently continue using it through this wrapper (if this is such a wrapper).
-	If this is not such a wrapper, returns this. Either way, this.x().equals(this.unstub().x()) for any func x.
+	If this is not such a wrapper, returns this.
+	Either way, this.x().equals(this.unstub().x()) for any func x in the Funcer interface
+	but not all funcs in java.lang.Object such as getClass(). 
 	<br><br>
-	Such downloading etc must $(...) like anything else so if it takes longer than allowed
+	Such downloading etc must $(...) (pay to HaltingDictator)
+	like anything else so if it takes longer than allowed
 	(counting compute cycles wasted while waiting on it, unless somehow redesigned to be async)
 	then must end the usual HaltingDictator way, so be careful to follow that spec
 	when creating Supplier<Funcer> to go in Stub constructor.
@@ -405,7 +451,7 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	*/
 	public Funcer unstub();
 	
-	/** submap or sublist(depending on param viewed as number).
+	/** PREfix eXclusive. submap or sublist(depending on param viewed as number).
 	TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	<br><br>	
 	BIG-O:
@@ -444,41 +490,71 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	*/
 	public Funcer prex(Funcer startExcl);
 	
-	/** submap or sublist(depending on param viewed as number).
+	/** PREfix eXclusive */
+	public default Funcer prex(Object startExcl){
+		return prex(wr(startExcl));
+	}
+	
+	/** SUFfix eXclusive. submap or sublist(depending on param viewed as number).
 	TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	*/
 	public Funcer sufx(Funcer endExcl);
 	
-	/** TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
+	/** SUFfix eXclusive */
+	public default Funcer sufx(Object endExcl){
+		return sufx(wr(endExcl));
+	}
+	
+	/** PREfix Inclusive. TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	*/
 	public Funcer prei(Funcer endIncl);
 	
-	/** submap or sublist(depending on param viewed as number).
+	/** PREfix Inclusive. */
+	public default Funcer prei(Object endIncl){
+		return prei(wr(endIncl));
+	}
+	
+	/** SUFfix Inclusive. submap or sublist(depending on param viewed as number).
 	TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	*/
 	public Funcer sufi(Funcer startIncl);
+	
+	/** SUFfix Inclusive. */
+	public default Funcer sufi(Object startIncl){
+		return sufi(wr(startIncl));
+	}
 		
 	
-	/** avl list prefix, else throws HaltingDictator.throwMe if not an avl list.
+	/** PREfix eXclusive. avl list prefix, else throws HaltingDictator.throwMe if not an avl list.
 	TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	*/
 	public Funcer prex(long endExcl);
 	
-	/** avl list suffix, else throws HaltingDictator.throwMe if not an avl list.
+	/** SUFfix eXclusive. avl list suffix, else throws HaltingDictator.throwMe if not an avl list.
 	TODO only grab prefix/suffix in balanced treelist (treemap is log) in ave log time but worst case log^2.
 	*/
 	public Funcer sufx(long endExcl);
 	
-	/** concat this avl treelist with param viewed as 1 list item, else throws HaltingDictator.throwMe if this is not an avl treelist
+	/** conCAT Object. this avl treelist with param viewed as 1 list item, else throws HaltingDictator.throwMe if this is not an avl treelist
 	TODO only cat balanced treelist to balanced treelist, for log cost.
 	*/
 	public Funcer cato(Funcer itemSuffix);
 	
-	/** concat this avl treelist with contents of param avl treelist, else throws HaltingDictator.throwMe if either is not an avl treelist.
+	/** conCAT Object. */
+	public default Funcer cato(Object itemSuffix){
+		return cato(wr(itemSuffix));
+	}
+	
+	/** conCAT N objects. concat this avl treelist with contents of param avl treelist, else throws HaltingDictator.throwMe if either is not an avl treelist.
 	TODO only cat balanced treelist to balanced treelist, for log cost.
 	*/
 	public Funcer catn(Funcer listSuffix);
+	
+	/** conCAT N objects. */
+	public default Funcer catn(Object listSuffix){
+		return catn(wr(listSuffix));
+	}
 	
 	/** If this is an avl treelist whose contents are all primitives, flattens into a single array,
 	such as opencl or javassist might efficiently use, but whats returned is not efficiently forkEditable.
@@ -494,9 +570,13 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	
 	public Funcer get(Funcer key);
 	
-	public Funcer get(long key);
+	public default Funcer get(long key){
+		return get(wr(key));
+	}
 	
-	public Funcer get(int key);
+	public default Funcer get(int key){
+		return get((long)key);
+	}
 	
 	/** automaticly wraps */
 	public default Funcer get(Object key){
@@ -506,6 +586,10 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	/** add at end of list, if its a list, else TODO what? */
 	public default Funcer push(Funcer value){
 		throw new Error("TODO");
+	}
+	
+	public default Funcer push(Object value){
+		return push(wr(value));
 	}
 	
 	/*
@@ -531,7 +615,15 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	public WeakReference<Funcer<LeafType>> vmInternal_javaWeakReferenceToMe();
 	*/
 	
-	/** recursively raises all Funcers reachable from here to expire time at least the param,
+	/** If garbcol (garbage collection) is done by expire time,
+	ignores else increases that time recursively if enough resources in HaltingDictator.
+	The other kinds of garbcol are zapeconacyc and fullEconacyc,
+	or you may use multiple kinds at once. HaltingDictator.topWallet is
+	for (TODO a freemarket trading ratio of, or maybe there should be a separate
+	HaltingDictator.topComputeCycles and .topMemAlloc)
+	simple compute cycles and memory allocation limiting.
+	<br><br>
+	Recursively raises all Funcers reachable from here to expire time at least the param,
 	paying to HaltingDictator.topWallet else throwing. The param is normally
 	(TODO should it not be a param at all?) HaltingDictator.topExpireTime.
 	This is the local memory version of SwarmPointer which allows the same thing,

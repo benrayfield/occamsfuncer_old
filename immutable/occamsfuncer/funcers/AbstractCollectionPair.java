@@ -6,25 +6,47 @@ public abstract class AbstractCollectionPair extends AbstractFuncer{
 	
 	public final long maplistSize;
 	
-	public final Funcer minChild, maxChild;
+	public final Funcer LDeep, RDeep;
 	
-	public AbstractCollectionPair(short firstHeader, Funcer salt, long maplistSize, Funcer minChild, Funcer maxChild){
-		super(firstHeader,salt);
+	public AbstractCollectionPair(short firstHeader, long maplistSize, Funcer minChild, Funcer maxChild){
+		super(firstHeader);
 		this.maplistSize = maplistSize;
-		this.minChild = minChild;
-		this.maxChild = maxChild;
+		this.LDeep = minChild;
+		this.RDeep = maxChild;
 	}
 	
 	public long maplistSize(){
 		return maplistSize;
 	}
 	
-	public Funcer L(){
-		return minChild;
+	public Funcer LDeep(){
+		return LDeep;
 	}
 
+	public Funcer RDeep(){
+		return RDeep;
+	}
+	
+	/*public Funcer L(){
+		return new Call(todo, LDeep);
+	}*/
+	
 	public Funcer R(){
-		return maxChild;
+		return RDeep;
+	}
+	
+	/** LR in littleEndian of bits.
+	This default implementation will work for any number of curries as long as LDeep() and RDeep() are the last 2.
+	*/
+	public int LDeepIndex(){
+		return 0b101;
+	}
+	
+	/** R in littleEndian of bits.
+	This default implementation will work for any number of curries as long as LDeep() and RDeep() are the last 2.
+	*/
+	public int RDeepIndex(){
+		return 0b11;
 	}
 	
 	public boolean contentFitsInId(){

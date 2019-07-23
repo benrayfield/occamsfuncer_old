@@ -1,0 +1,81 @@
+/(
+	This func will take a map of the "x, y, z, m0, m1, c1, c2, c3, dt" vars
+	and return a map of the updated vars. dt is change in time (in seconds).
+	Should it change the dt to 0?
+	Should it take 3 params: map of "m0, m1, c1, c2, c3", dt, map of "x y z"?
+	Or, should it be an igfp containing that map?
+	Should it be a func that statelessly acts like a stateful object
+	such as f(theFunc ;setDt .001) returns a forkEdited theFunc,
+	and f(theFunc ;setDt .001 ;nextState) returns a forkEdit of that
+	where x y and z have changed?
+	It would be a useful thing to be able to do for other tasks.
+	What about a map of string to object and values sometimes
+	contain such strings, to use like a web of objects (like in mindmap
+	or pointers in normal object oriented programming)?
+	How would we know which of those strings are meant as pointer?
+	Every func would have to return a forkEdited view of the outer map
+	(of string to object). Basicly it would be 1 object acting as many objects,
+	and identityFunc/this would refer to that, so many func calls would have
+	the first param of the inner object's name then params relevant to it.
+	Like if ;aChuasCircuit is an object name and ;setDt is one of its funcs,
+	you might call something like F(?aChuasCircuit.setDt ,.001)
+	but probably thats the wrong code since ?aChuasCircuit.setDt
+	is a syntax that means F(,getdeep this L(,;aChuasCircuit ,;setDt))
+	aka F(,getdeep this l(;aChuasCircuit ;setDt)).
+	The problem with that is it would call the value of the setDt func
+	on the outer map but setDt is designed to be called on the value
+	of aChuasCircuit. Funcs in these objects would have to be designed different
+	if they are to work together inside an outer map.
+	Or, the map could be one of the params, and every func would
+	return a forkEdited map.
+	I do need some kind of longterm storage map which I would use like mindmap.
+	
+
+	I plan to use a sim of chuasCircuit as LSTM testcase
+	cuz its very simple and chaotic.
+	 
+	http://www.chuacircuits.com/sim.php QUOTE
+	Chua circuit equations:
+		   dx/dt = c1*(y-x-f(x)) 
+		   dy/dt = c2*(x-y+z)
+		   dz/dt = -c3*y
+		   f(x) = m1*x+(m0-m1)/2*(|x+1|-|x-1|)
+
+		Initial: X: 
+		0.7
+		 Y: 
+		0
+		 Z: 
+		0
+		 
+		Default X: 0.7    Y: 0      Z: 0
+		C1:  
+		15.6
+		 Default: 15.6
+		C2:  
+		1
+		 Default: 1
+		C3:  
+		28
+		 Default: 28
+		M0: 
+		-1.143
+		 Default: -1.143
+		M1: 
+		-0.714
+		 Default: -0.714
+	UNQUOTE.
+	public class ChuasCircuit{
+		
+		public double x, y, z, m0, m1, c1, c2, c3;
+		
+		public void nextState(double dt){
+			double dxOverDt = c1*(y-x-(m1*x+(m0-m1)/2*(Math.abs(x+1)-Math.abs(x-1))));
+			double dyOverDt = c2*(x-y+z);
+			double dzOverDt = -c3*y;
+			x += dxOverDt*dt;
+			y += dyOverDt*dt;
+			z += dzOverDt*dt;
+		}
+	}
+)

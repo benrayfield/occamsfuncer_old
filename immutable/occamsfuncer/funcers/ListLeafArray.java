@@ -1,6 +1,8 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
 import java.io.OutputStream;
+
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.Opcode;
@@ -12,8 +14,8 @@ public class ListLeafArray extends AbstractFuncer{
 	
 	public final Funcer array;
 
-	public ListLeafArray(short firstHeader, Funcer salt, Funcer array){
-		super(firstHeader, salt);
+	public ListLeafArray(Funcer array){
+		super((short)Data.coretypeAvlListLeafArray); //all mask bits 0
 		this.array = array;
 	}
 
@@ -23,6 +25,10 @@ public class ListLeafArray extends AbstractFuncer{
 
 	public Funcer fStrict(Funcer param){
 		throw new Error("TODO");
+	}
+	
+	public Funcer expand(){
+		return this;
 	}
 
 	public void content(OutputStream out){
