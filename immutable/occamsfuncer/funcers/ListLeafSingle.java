@@ -1,7 +1,10 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import static immutable.occamsfuncer.ImportStatic.evalInfiniteLoop;
+
 import java.io.OutputStream;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
@@ -10,12 +13,12 @@ import immutable.occamsfuncer.Opcode;
 /** Interprets 1 funcer as a list item, instead of interpreting its contents as list items */
 public class ListLeafSingle extends AbstractFuncer{
 	
-	todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	//todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
 	
 	public final Funcer val;
 
 	public ListLeafSingle(Funcer val){
-		super((short)Data.coretypeAvlListLeafSingle); //all mask bits 0
+		//super((short)Opcode.coretypeAvlListLeafSingle.ordinal()); //all mask bits 0
 		this.val = val;
 	}
 
@@ -40,7 +43,7 @@ public class ListLeafSingle extends AbstractFuncer{
 	}
 
 	public Funcer L(){
-		return Opcode.listLeafSingle.ob;
+		return Opcode.o_coretypeAvlListLeafSingle.ob;
 	}
 
 	public Funcer R(){
@@ -139,6 +142,15 @@ public class ListLeafSingle extends AbstractFuncer{
 		throw new Error("TODO");
 	}
 	
+	public int childs(){
+		return 1;
+	}
+
+	public Funcer child(int index){
+		if(index == 0) return val;
+		return evalInfiniteLoop();
+	}
+		
 	/*
 	public final Funcer val;
 	

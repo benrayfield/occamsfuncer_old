@@ -28,7 +28,7 @@ public class Weakref extends AbstractFuncer{
 	Creates weakref id (id of a recognizer-func of it) if its a non-weakref.
 	*/
 	public Weakref(Id myIdOrTargetsId){
-		super((short)((myIdOrTargetsId.idA>>>48)|Data.maskIsWeakref)); //high 16 bits of this.id
+		//super((short)((myIdOrTargetsId.idA>>>48)|Data.maskIsWeakref)); //high 16 bits of this.id
 		this.id = myIdOrTargetsId.setWeakref(true);
 	}
 	

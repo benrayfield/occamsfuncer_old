@@ -149,7 +149,7 @@ public class WithSalt extends AbstractFuncer{
 	
 	/** salt is first in param list so its like IgnoredataFuncParam */
 	public WithSalt(Funcer salt, Funcer val){
-		super((short)Data.coretypeWithSalt); //all mask bits 0
+		//super((short)Data.coretypeWithSalt); //all mask bits 0
 		if(val instanceof WithSalt) throw new Error("Cant salt a salt");
 		this.salt = salt;
 		this.val = val;
@@ -264,6 +264,22 @@ public class WithSalt extends AbstractFuncer{
 	}
 
 	public int compareTo(Object o){
+		throw new Error("TODO");
+	}
+
+	public Funcer child(int index){
+		throw new Error("TODO");
+	}
+
+	public int firstBits(){
+		throw new Error("TODO");
+	}
+
+	public Funcer fNonstrict(Funcer param){
+		throw new Error("TODO");
+	}
+
+	public Opcode coretype(){
 		throw new Error("TODO");
 	}
 

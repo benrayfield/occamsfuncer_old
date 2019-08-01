@@ -49,6 +49,78 @@ so I'm willing to pay that cost.
 public class Data{
 	private Data(){}
 	
+	/*TODO everything is datastruct: type colon content.
+	1 byte types are coretypes. All are ascii and printable.
+	There will be 3 of those for: hash, weakrefOfHash, localId. All 3 of those are id192.
+	The others are things like MapPair, MapSingle, Nil, Call, SCall, SLinkedList, TheImportFunc, etc.
+	Only the Leaf coretype (including Num as an optimization of Leaf) has the varint array sizes etc.
+	AvlPair and ListSingle have 1 byte to tell is all their contents the same type (such as float, int4, etc)
+	and what is the log2 of its size, and has some (or all?) of the same masks as in Leaf.
+	If I need room for expansion, I just use bigger types before the colon.
+	If I want to define exactly which version/fork of occamsfuncer,
+	I can prefix forExample: application/x-occamsfuncer-fork7128543112795615:h:...theHashBytes...
+	TODO Im undecided if should use varint after each colon for the size remaining,
+	which is still compatible with such prefixing.
+	
+	How about contenttypes that start with a Capital letter are nonstandard so dont have to waste data
+	prefixing them with x-?
+	Or can I afford to prefix with forexample x-h: which leaves only 160 bits of double-SHA256?
+	How about types that dont have a slash are automatically localtypes?
+
+	
+	CANCEL[[[ TODO define at most 26 coretypes, including that 2 of them are: hash, localid.
+	These are written as the 26 letters. Double that by isWeakref meaning capital/lowercase of those.
+	Concat a colon for compatibility with application/x-occamsfuncer-fork7128543112795615 .
+	All 52 of those 1-byte content-types are reserved for occamsfuncer internals.
+	Anything bigger can be normal content-type such as "image/jpeg:...bytes of jpg file...".
+	Hash will be [either "Z:" or "z:"] concat the last 176 bits of double-SHA256.
+	Weakref is therefore a certain bit (is 0 if weakref), since capital+32=lowercase.
+	WAIT... isLocal bit needs to branch the same as isweakref, so however many coretypes there are,
+	needs to be 4 times that many.
+	]]]
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	TODO update code for:
+		SOLUTION:
+			First bit is isCoretypeOrHashElseContenttypethencolonthencontent.
+			If 1 then its either a coretype or a hash of a coretype or a hash of a 
+			contenttypethencolonthencontent.
+			If 0 then its a contenttypethencolonthencontent.
+			contenttypethencolonthencontent include forExample image/jpeg:...bytesOfJpgFile...
+			and forExample merkleList:* aHashInBase64 anotherHashInBase64. In merkleList and
+			the merkleChilds list in merkleJson, an id192 is always base64 (whose digits include _
+					and $ and are in ascending ascii/utf8 order so can sort ids by their base64 
+					and get the same sort as their binary form which is the same sort in the map
+					coretypes). Contenttypethencolonthencontent literals, such as every word 
+			in this sentence thats not length 32 or contains a non-base64-char (or maybe I'll
+					make them start with an extra $ so anything that doesnt start with $ in
+					merkleList is a literal.... YES, use the $ so every id is 33 base64 chars 
+					and 192 bits. You cant have a weakref to a contenttypethencolonthencontent
+					but you can have a weakref to any coretype which points at it, and you can 
+					derive your own weakref object by multiple coretypes since a weakref just
+					means a function that returns 1 if its param is that object else returns
+					0 (for compatibility with goalfuncs)... actually I'll just define a new 
+					coretype for weakref to contenttypethencolonthencontent, which has only
+					1 pointer in it but is still less efficient than using the weakref bit
+					to point at the same 191 other bits with the weakref bit  of 0.
+		WAIT, theres also maskIsMerkle so theres 4 bits not 3: The other is maskIsMerkle,
+		so hash will be last 188 bits of double-sha256.
+		The 4 bit vars will be:
+			isCoretypeOrHashElseContenttypethencolonthencontent
+			maskIsMerkle
+			maskIsHash
+			maskIsWeakref
+	*/	
+			
+	
 	static{
 		todo("TODO get sCall working asap to make sure the logic is consistent, even though it probably is.");
 		todo("TODO option (without paying much extra memory when its off, nor needing to recompile to change it)\r\n" 
@@ -68,128 +140,14 @@ public class Data{
 				+" as name of econacycCost");
 		}
 	
-	public static final int headerBitsForMask = 7;
-	public static final int headerBitsForHowManyDims = 4;
-	public static final int headerBitsForCoreType = 5;
 	
-	/*FIXME I need sCurryList and sLinkedList and sMap and an s and non-s form for almost every datastruct,
-	as in the f(x y) vs F(x y) syntax in recent *.occamsfuncer files,
-	and the short firstHeader needs to include that. I wont store the k's separately
-	even though in syntax its written as commas(maybe multiple k depth?),
-	but I do need at least a bit for is it the s vs non-s form.
-	And I want it to be in the second byte, so maybe need to have 0-7 dims instead of 0-15,
-	cuz I dont want to use maskindReserved0 for it in first byte.
-	BUT I'LL PROBABLY PUT IT STARTING AT THE LAST BIT OF THE FIRST BYTE ANYWAYS
-	SINCE IM USING SHORT/16 FIRSTHEADER.
-	*/
 	
-	/** If 1 then the whole datastruct is: bit isHash, bit isWeakref, bit[190] hash,
-	and see func in Id for what the hash algorithm is (can fork the opensource and start your own
-	p2p net to change the hash algorithm, and can copy data except minKey and maxKey etc need rehashing.
-	If !isHash, then the normal datastruct as described in the comment of this Data class.
-	<br><br>
-	maskIsHash and maskIsWeakref must be the high 2 bits cuz if isHash
-	then the next 190 bits are hash instead of header16. 
-	*/
-	public static final short maskIsHash = (short)(1<<15);
-	/** maskIsHash and maskIsWeakref must be the high 2 bits cuz if isHash
-	then the next 190 bits are hash instead of header16.
-	*/
-	public static final short maskIsWeakref = (short)(1<<14);
-	public static final short maskIsScalar = (short)(1<<13);
-	public static final short maskIsInteger = (short)(1<<12);
-	public static final short maskIsSigned = (short)(1<<11);
-	public static final short masksIsText = (short)(1<<10);
-	/** URL, URN, contentType, etc, normally used with isText but could also be isInteger, such as "image/jpeg". */
-	public static final short maskIsSemantic = (short)(1<<9);
-	
-	FIXME rename all *avl* coretype to *lazycat* types
+	/*FIXME rename all *avl* coretype to *lazycat* types
 	and optional-per-op enforce avl but keep enough info in each lazycatPair and lazycatSingle
 	to do avl if you want to do avl. That info at least includes the size
 	since we can (if find some ratio, maybe goldenRatio? what is it?)
 	do avl rotation by size (number of keyvals) instead of height.
-	
-	/** the func that statelessly imports funcs, written as ??,
-	like f(?? "plus" 3 4) returns 7, and f(f(?? "plus")#+ 3 f(+ 4 1)) returns 8.
 	*/
-	public static final int coretypeImport = 0;
-	/** TODO find churchEncoding of nil as a lambda, which this is an optimization of */
-	public static final int coretypeNil = 1;
-	public static final int coretypeWithSalt = 2;
-	/** Example: float[50][99937][20], or Double, or Long, or Integer, etc, with the type info
-	in the short/16 firstHeader such as to say it isSemantic or not like semantic "image/jpeg".
-	*/
-	public static final int coretypeLeaf = 3;
-	public static final int coretypeCall = 4;
-	public static final int coretypeSCall = 5;
-	public static final int coretypeConsPair = 6;
-	public static final int coretypeMapEmpty = 7;
-	public static final int coretypeMapSingle = 8;
-	public static final int coretypeSMapSingle = 9;
-	public static final int coretypeMapPair = 10;
-	//public static final int coretypeSMapPair = 11;
-	public static final int coretypeAvlListEmpty = 12;
-	public static final int coretypeAvlListLeafSingle = 13;
-	public static final int coretypeAvlListLeafArray = 14;
-	//FIXME do I need coretypeSAvlListLeafSingle and coreTypeSAvlListLeafArray? Probably not, but verify.
-	//public static final int coretypeSListSingle = 15;
-	public static final int coretypeSLinkedListPair = 16; //the S form of coretypeConsPair
-	public static final int coretypeAvlListPair = 17;
-	//public static final int coretypeSAvlListPair = 18;
-	/** 2 pointers (TODO also a salt?): type and value,
-	though technically the whole thing is a Funcer like anythning else so is normally viewed
-	as a value, it may be useful forExample to have a typedObject
-	where the type is an isSemantic of "image/jpeg" and value to be an array of unsigned int1 or signed bytes etc.
-	*/
-	public static final int coretypeTypedObject = 19;
-	public static final int coretypeSTypedObject = 20;
-	/** Datastruct described in https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
-	which has single-line string key/value pairs then an empty line (delimiter is \r\n\r\n)
-	then binary data. In the simplest case it needs the "HTTP/1.1 200 OK" first line
-	and "Content-Type: application/json" then \r\n\r\n then the json,
-	or "Content-Type: image/jpeg" then \r\n\r\n then the image bytes,
-	The main reason I want the http datastruct is it has Content-Type and binary data.
-	I'm not much interested in the other fields but I do want to leave it open
-	for future expansion. A benefit of this is any response got from a http web call
-	can be represented directly in occamsfuncer,
-	though you might want to remove some of the headers
-	such as "Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)".
-	<br><br>
-	For help parsing this datastruct, you could use Occamserver or Apache HttpCore or Tomcat.
-	<br><br>
-	This is similar to coretypeTypedObject and coretypeSTypedObject
-	except those are always of other funcers recursively
-	and this is always a leaf of strings and binary data.
-	<br><br>
-	Even if you use some other network protocol, or if things are generated without networking,
-	you can still use the http datastruct for a variety of things,
-	such as a view of files on your harddrive or of a generated java.awt.Image or ogg sound file etc.
-	<br><br>
-	If you want just a bitstring or bytestring, use coretypeLeaf.
-	Its recommended to make subranges of this coretypeHttpBytes's bits viewable as coretypeLeaf
-	andOr the avl list of bits coretypes, or at least the content section (after the first \r\n\r\n)
-	viewable as a separate binary object. I'm undecided on that optimization and datastruct design. 
-	*/
-	public static final int coretypeHttpBytes = 21;
-	/** tlapp is Torrent Like Acyc Part Packet (in mindmap, basically a kind of compression (incomplete design)
-	for merkle forest where can refer to other tlapps or leafs by noncompressed id at some crossSection).
-	*/
-	public static final int coretypeReserved19ForTlapp = 22;
-	/** like mmgMouseai p2p streams, a chunk of data from it or from multiple of them,
-	and part of that being a pointer at the name of the stream which may be any Funcer
-	especially a publickey such as ed25519 but I dont want to hardcode the kind of digsig algorithm here
-	nor to hardcode that its digsig based at all
-	since it could be url based for efficiency or prppfOfWork based.
-	*/
-	public static final int coretypeReserved20ForStream = 23;
-	public static final int coretypeReserved24 = 24;
-	public static final int coretypeReserved25 = 25;
-	public static final int coretypeReserved26 = 26;
-	public static final int coretypeReserved27 = 27;
-	public static final int coretypeReserved28 = 28;
-	public static final int coretypeReserved29 = 29;
-	public static final int coretypeReserved30 = 30;
-	public static final int coretypeReserved31 = 31;
 	
 	
 	/*Do I want a coretype for the p(...) syntax that does the same as the progn op?
@@ -213,16 +171,16 @@ public class Data{
 	that means F(getfunc L(getparama getparamb getparamc...))?
 	*/
 	
-	public static int howManyDims(short firstHeader){
+	/*public static int howManyDims(short firstHeader){
 		//compiler will optimize to a >>> and an &
 		return (firstHeader>>>headerBitsForCoreType)&((1<<headerBitsForHowManyDims)-1);
 	}
 	
-	/** 0 to 31, one of the coreType* consts. */
+	/** 0 to 31, one of the coreType* consts. *
 	public static int coreType(short firstHeader){
 		//compiler will optimize to a &
 		return firstHeader&((1<<headerBitsForCoreType)-1);
-	}
+	}*/
 	
 	/** https://github.com/multiformats/unsigned-varint
 	The encoding is:

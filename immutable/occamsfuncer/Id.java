@@ -1,6 +1,8 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
 import static immutable.occamsfuncer.ImportStatic.*;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.MessageDigest;
@@ -24,7 +26,7 @@ Only ids can be map keys, such as MapPair and MapSingle (see CoreType for the ex
 <br><br>
 Stored as binary. ToString returns base64 view, 24 bytes fits evenly in 32 digits.
 */
-public final class Id implements Comparable<Id>{
+public final class Id{
 	
 	public final long idA, idB, idC;
 	
@@ -38,15 +40,73 @@ public final class Id implements Comparable<Id>{
 	
 	private static final MessageDigest sha256;
 	private static final byte[] temp32Bytes = new byte[32];
+	private static final OutputStream outToSha256;
 	static{
 		try{
 			sha256 = MessageDigest.getInstance("SHA-256");
 		}catch(NoSuchAlgorithmException e){
 			throw new Error(e);
 		}
+		outToSha256 = new OutputStream(){
+			public void write(int b) throws IOException{
+				sha256.update((byte)b);
+			}
+		};
 	}
 	
+	static Id wrapInIdPadWithBit0s(Funcer f){
+		//TODO optimize to not need byte[], or copy of byte[] in ByteArrayOutputStream, or that stream. Go directly to longs.
+		ByteArrayOutputStream s = new ByteArrayOutputStream(24);
+		f.content(s);
+		byte[] b = s.toByteArray();
+		return new Id(
+			BitsUtil.readLongFromByteArray(b,0),
+			BitsUtil.readLongFromByteArray(b,8),
+			BitsUtil.readLongFromByteArray(b,16)
+		);
+	}
+	
+	/** some header bits then last n bits of double-SHA256 */
 	public static Id id(Funcer f){
+		/*FIXME theres 3 kinds of id, and all have 22 bytes of data after a byte and colon:
+		double-SHA256 (safe to cross untrusted borders, incoming or outgoing),
+		weakref to a (last 22 bytes of) double-SHA256 (safe to cross untrusted borders, incoming or outgoing),
+		and localId (not to cross untrusted borders).
+		*/
+		 
+		if(f.contentFitsInId()) return wrapInIdPadWithBit0s(f);
+		synchronized(outToSha256){
+			sha256.reset();
+			f.content(outToSha256);
+			sha256.digest(temp32Bytes); //SHA-256
+			sha256.reset();
+			sha256.update(temp32Bytes);
+			f.content(outToSha256);
+			sha256.digest(temp32Bytes); //double-SHA256
+			long longB = BitsUtil.readLongFromByteArray(temp32Bytes,8);
+			/*if(!f.contentFitsInId()){
+				//hash else is literal data that fits in id
+				longB |= (((long)Data.maskIsHash)<<32);
+			}
+			if(f.isWeakref()){
+				//weakref to same id except with weakref bit 0 else is the normal id such a weakref could point at
+				longB |= (((long)Data.maskIsWeakref)<<32);
+			}
+			int header = f.firstBits();
+			if(!f.contentFitsInId()){
+				
+			}*/
+			longB = (((long)(f.firstBits()>>>28))<<60) | (longB&0x0fffffffffffffffL); //keep first 4 bits of firstBits()
+			long longC = BitsUtil.readLongFromByteArray(temp32Bytes,16);
+			long longD = BitsUtil.readLongFromByteArray(temp32Bytes,24);
+			return new Id(longB, longC, longD);
+		}
+	}
+	
+	/*public static Id id(Funcer f){
+		TODO double-SHA256 (hash the 32 bytes of sha256 concat the input, instead of whats below,
+		and use the first 4 bits in chooseTheFirstFewBitVarsOfHeaderFor(application/x-occamsfuncer-fork7128543112795615).
+		
 		synchronized(sha256){
 			sha256.reset();
 			//content(sha256Out,false); //forward
@@ -97,7 +157,7 @@ public final class Id implements Comparable<Id>{
 			long longD = BitsUtil.readLongFromByteArray(temp32Bytes,24);
 			return new Id(longB, longC, longD);
 		}
-	}
+	}*/
 	
 	/** 24 bytes are 32 base64 chars. */
 	public Id(String base64){
@@ -120,24 +180,50 @@ public final class Id implements Comparable<Id>{
 	0 for literal that fits in id (such as a small string or double or float[5] or float[2][2]).
 	*/
 	public boolean isHash(){
-		return ((idA>>>48)&Data.maskIsHash)!=0;
+		return coretypeByte()==Opcode.h_coretypeHashId.coretypeByteOrZeroIfNotCoretype;
+		//return ((idA>>>48)&Data.maskIsHash)!=0;
 		//return (idA&(1L<<63))!=0;
 	}
 	
-	/** bit index 1 is 1 for weakref (of the id with that bit flipped), 0 for normal */
-	public boolean isWeakref(){
-		return ((idA>>>48)&Data.maskIsWeakref)!=0;
+	public boolean isWeakrefThatFitsInId(){
+		return coretypeByte()==Opcode.w_coretypeOptimizedWeakrefId.coretypeByteOrZeroIfNotCoretype;
 	}
 	
-	public boolean equalsIgnoringWeakrefBit(Id i){
-		long mask = ~(((long)Data.maskIsWeakref)<<48);
-		return (idA&mask)==(i.idA&mask) && idB==i.idB && idC==i.idC;
+	public byte coretypeByte(){
+		return (byte)(idA>>>56);
+	}
+	
+	/** bit index 1 is 1 for weakref (of the id with that bit flipped), 0 for normal *
+	public boolean isWeakref(){
+		return ((idA>>>48)&Data.maskIsWeakref)!=0;
+	}*/
+	
+	public boolean equalsIgnoringWeakrefBit(Id i){ //TODO rename this since using type:content instead of mask
+		long mask = 0x00ffffffffffffffL;
+		return (idA&mask)==(idB&mask) && idB==i.idB && idC==i.idC; //FIXME should weakref equal localId this way? It does.
+		//long mask = ~(((long)Data.maskIsWeakref)<<48);
+		//return (idA&mask)==(i.idA&mask) && idB==i.idB && idC==i.idC;
+	}
+	
+	public Id setCoretypeByte(byte b){
+		return new Id(((b&0xffL)<<56)|(idA&0x00ffffffffffffffL), idB, idC);
 	}
 	
 	public Id setWeakref(boolean becomeWeakref){
-		if(isWeakref() == becomeWeakref) return this;
-		long wr = ((long)Data.maskIsWeakref)<<48;
-		return new Id(becomeWeakref ? (idA|wr) : (idA&~wr), idB, idC);
+		if(isHash()){
+			if(becomeWeakref) return setCoretypeByte(Opcode.h_coretypeHashId.coretypeByteOrZeroIfNotCoretype);
+			return this;
+		}
+		if(isWeakrefThatFitsInId()){
+		//if(isWeakrefThatFitsInId()){
+			if(!becomeWeakref) return setCoretypeByte(Opcode.h_coretypeHashId.coretypeByteOrZeroIfNotCoretype);
+			return this;
+		}
+		throw new Error("Is this a *localId? optimizedWeakref (not the generalWeakref coretype) only works between *hashId and *optimizedWeakrefId and they share the last 22 bytes of id so dont have to store them as data to hash. If you need a more general weakref to any id other than that, use *generalWeakrefId coretype.");
+		
+		//if(isWeakref() == becomeWeakref) return this;
+		//long wr = ((long)Data.maskIsWeakref)<<48;
+		//return new Id(becomeWeakref ? (idA|wr) : (idA&~wr), idB, idC);
 	}
 	
 	/** As Comparable, Id is 192 bit unsigned integer (despite java longs being signed). */
@@ -190,6 +276,17 @@ public final class Id implements Comparable<Id>{
 			(int)idC
 		});
 	}
+	
+	public void content(OutputStream out){
+		//idA starts with coretype().coretypeByteOrZeroIfNotCoretype then colon
+		//Those can be doubble-SHA256, localName (not to be used across untrusted borders), or weakref (to a double-SHA256),
+		//where only the last 22 bytes of double-SHA256 are used.
+		BitsUtil.writeLong(idA, out);
+		BitsUtil.writeLong(idB, out);
+		BitsUtil.writeLong(idC, out);	
+	}
+	
+	public int contentLen(){ return sizeInBytes; }
 	
 	/*replaced by a func that returns byte[]
 	public void content(OutputStream out, boolean reverse) throws IOException{

@@ -1,7 +1,10 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import static immutable.occamsfuncer.ImportStatic.evalInfiniteLoop;
+
 import java.io.OutputStream;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
@@ -15,7 +18,7 @@ public class ListLeafArray extends AbstractFuncer{
 	public final Funcer array;
 
 	public ListLeafArray(Funcer array){
-		super((short)Data.coretypeAvlListLeafArray); //all mask bits 0
+		//super((short)Opcode.coretypeAvlListLeafArray.ordinal()); //all mask bits 0
 		this.array = array;
 	}
 
@@ -137,6 +140,15 @@ public class ListLeafArray extends AbstractFuncer{
 
 	public int compareTo(Object o){
 		throw new Error("TODO");
+	}
+	
+	public int childs(){
+		return 1;
+	}
+
+	public Funcer child(int index){
+		if(index == 0) return array;
+		return evalInfiniteLoop();
 	}
 	
 	/*public final Funcer array;

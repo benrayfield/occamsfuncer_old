@@ -6,9 +6,11 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
+import immutable.occamsfuncer.funcers.*;
 import immutable.occamsfuncer.Opcode;
 import immutable.util.BitsUtil;
 import mutable.occamsfuncer.memstat.MemStat;
@@ -20,8 +22,9 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 	
 	/** This is the first 16 bits, the part of header before the multiformatsVarints and content,
 	as described in Data class comment.
-	*/
+	*
 	public final short firstHeader;
+	*/
 	
 	protected Id id;
 	
@@ -29,9 +32,9 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 	
 	//protected WeakReference<Funcer<T>> vmInternal_javaWeakReferenceToMe;
 	
-	public AbstractFuncer(short firstHeader){
+	/*public AbstractFuncer(short firstHeader){
 		this.firstHeader = firstHeader;
-	}
+	}*/
 	
 	public MemStat mem(){
 		if(mem == null) mem = HaltingDictator.newMemStat();
@@ -45,9 +48,9 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 		return vmInternal_javaWeakReferenceToMe;
 	}*/
 	
-	public short firstHeader(){
+	/*public short firstHeader(){
 		return firstHeader;
-	}
+	}*/
 
 	public long maplistSize(){
 		throw new Error("TODO");
@@ -72,6 +75,11 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 		return id;
 	}
 	
+	/** in all Funcers except Leaf and Num there are 0 dims. Num is same coretype as Leaf, an optimization of wrapping a double. */
+	public int dims(){
+		return 0;
+	}
+	
 	public int dimSize(int dimIndex){
 		throw new Error("TODO");
 	}
@@ -84,5 +92,21 @@ public abstract class AbstractFuncer<T> implements Funcer<T>{
 	*
 	public final Funcer salt;
 	*/
+	
+	public Funcer LDeep(){
+		throw new Error("TODO");
+	}
+	
+	public Funcer RDeep(){
+		throw new Error("TODO");
+	}
+	
+	public int childs(){
+		throw new Error("TODO");
+	}
+	
+	public Funcer child(int childIndex){
+		throw new Error("TODO");
+	}
 
 }

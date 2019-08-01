@@ -1,6 +1,6 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer;
-import static immutable.occamsfuncer.HaltingDictator.*;
+import static immutable.occamsfuncer.ImportStatic.*;
 //import static immutable.occamsfuncer.storageAndCache.CachedWrap.cwrap;
 //import static immutable.occamsfuncer.storageAndCache.NoncachedWrap.nwrap;
 
@@ -9,12 +9,33 @@ import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 
-import immutable.occamsfuncer.funcers.todo;
+import immutable.occamsfuncer.funcers.Call;
+import immutable.occamsfuncer.funcers.Import;
 
 //import immutable.occamsfuncer.funcers.Funcall;
 //import immutable.occamsfuncer.storageAndCache.DataUtil;
 
-/** core funcs which all other funcs and datastructs are made of.
+/** The first 32 (TODO I might expand that to 128) of these are coretypes
+which are each an opcode and a merkle datastruct. The rest are just opcodes used
+with the "call" coretype/opcode, as a datastruct is just bits, but in Funcer form is a Call.java.
+The Enum.ordinal() of coretypes are part of the merkle datastructs so must not change
+when those are saved and loaded into a later run of JVM which may have more of the
+reserved coretypes filled in. Those after that range, which are "just opcodes",
+can change their ordinals without a problem, but for efficiency
+the total number of these enums should be at most 256, or maybe 255, or maybe 127?
+<br><br>
+Each coretype when used as an opcode returns an instance of that coretype,
+such as a MapPair.java which is a funcer that when called on a key returns the value,
+so f(?? ;mapPair size minKey maxKey minChild maxChild) returns a MapPair
+if those 5 words are replaced by valid values for a MapPair
+else it returns (TODO what constant?) nil since user level code cant create
+a coretype instance that violates the design of that coretype
+such as maxChild.minKey() sorting lower than minChild.maxKey(),
+as Funcer implements Comparable<Funcer> by bits of lazyEvaled id192.
+<br><br>
+OLD:
+<br><br>
+core funcs which all other funcs and datastructs are made of.
 This is an optimization layered on top of CoreType which is
 datastructs. Ops go mostly in Funcall of TheImportFunc and Utf8Array
 such as [? "plus" 3 4] returns 7, where ? means TheImportFunc.
@@ -41,7 +62,228 @@ or . or - or 0 1 2 3 4 5 6 7 8 9 and cant contain whitespace.
 public enum Opcode{
 	
 	
+	//"TODO I want all the capital letters A_ to Z_, room for expansion."
 	
+	//"TODO insert exactly enough enum values before a_... that its ordinal() equals ascii 'a'.""
+	
+	
+	/** the func that statelessly imports funcs, written as ??,
+	like f(?? "plus" 3 4) returns 7, and f(f(?? "plus")#+ 3 f(+ 4 1)) returns 8.
+	*/
+	a_coretypeImport(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		//This is not normally called directly since it is the ?? in f(?? ;plus 3 4) which returns 7.
+		//f(?? ;coretypeImport ;plus 3 4) returns 7.
+		//f(?? ;coretypeImport ;coretypeImport ;plus 3 4) returns 7. And so on.
+		//f(?? importWhat) returns a Call.java whose leftmostOp is the string name of the Opcode to call
+		//and whose waitCurries is defined by that Opcode instead of this coretypeImport opcode.
+		//This is normally called just once per opcode then that Funcer is reused,
+		//so the following slow code is not a bottleneck:
+		Opcode op = getOrNull(R.str());
+		if(op == null) return evalInfiniteLoop(); //caught at innermost Opcode.spend
+		return op.ob;
+	}),
+	
+	/** TODO find churchEncoding of nil as a lambda, which this is an optimization of */
+	b_coretypeNil(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return (Funcer)null;
+		//throw new Error("TODO");
+	}),
+	/** a pair of salt Funcer and content Funcer. Salt is often the same string as its #name but can be any Funcer,
+	and remember that #names dont affect hash so different views of the same object can have #differentNames
+	but must all have the same hashId unless its a localId which are arbitrary.
+	*/
+	c_coretypeWithSalt(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	/** Example: float[50][99937][20], or Double, or Long, or Integer, etc, with the type info
+	in the short/16 firstHeader such as to say it isSemantic or not like semantic "image/jpeg".
+	*/
+	d_coretypeLeaf(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	e_coretypeCall(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	f_coretypeSCall(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	g_coretypeConsPair(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	h_coretypeHashId(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	i_coretypeMapEmpty(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	j_coretypeMapSingle(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	k_coretypeSMapSingle(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	l_coretypeLocalId(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	m_coretypeMapPair(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	//coretypeSMapPair = 11;
+	n_coretypeAvlListEmpty(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	o_coretypeAvlListLeafSingle(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	todo_coretypeAvlListPair(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	p_coretypeAvlListLeafArray(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	//FIXME do I need coretypeSAvlListLeafSingle and coreTypeSAvlListLeafArray? Probably not, but verify.
+	//coretypeSListSingle = 15;
+	q_coretypeSLinkedListPair(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}), //the S form of coretypeConsPair
+	//cant do this cuz, like map, has to be made by forkputs: coretypeAvlListPair = 17;
+	//coretypeSAvlListPair = 18;
+	/** 2 pointers (TODO also a salt?): type and value,
+	though technically the whole thing is a Funcer like anythning else so is normally viewed
+	as a value, it may be useful forExample to have a typedObject
+	where the type is an isSemantic of "image/jpeg" and value to be an array of unsigned int1 or signed bytes etc.
+	*/
+	r_coretypeTypedObject(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	s_coretypeSTypedObject(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	
+	/** see application/x-occamsfuncer-... Anything other than a coretype goes here,
+	and make sure to...
+	a:content b:content image/jpeg:jpgbytes. Create coretype called othertypecoloncontent.
+	Organize it to store the "image/jpeg" separately from the content so can recurse content types
+	such as application/x-occamsfuncer-fork56885333:b:..content.\
+	*/
+	t_coretypeTypeColonContent(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	
+	/** NOt needed cuz of application/x-occamsfuncer-... Content-Type,
+	buyt still need one called coretype_othertypecoloncontent for type: other than coretypes.
+	OLD...
+	<br><br>
+	Datastruct described in https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+	which has single-line string key/value pairs then an empty line (delimiter is \r\n\r\n)
+	then binary data. In the simplest case it needs the "HTTP/1.1 200 OK" first line
+	and "Content-Type: application/json" then \r\n\r\n then the json,
+	or "Content-Type: image/jpeg" then \r\n\r\n then the image bytes,
+	The main reason I want the http datastruct is it has Content-Type and binary data.
+	I'm not much interested in the other fields but I do want to leave it open
+	for future expansion. A benefit of this is any response got from a http web call
+	can be represented directly in occamsfuncer,
+	though you might want to remove some of the headers
+	such as "Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)".
+	<br><br>
+	For help parsing this datastruct, you could use Occamserver or Apache HttpCore or Tomcat.
+	<br><br>
+	This is similar to coretypeTypedObject and coretypeSTypedObject
+	except those are always of other funcers recursively
+	and this is always a leaf of strings and binary data.
+	<br><br>
+	Even if you use some other network protocol, or if things are generated without networking,
+	you can still use the http datastruct for a variety of things,
+	such as a view of files on your harddrive or of a generated java.awt.Image or ogg sound file etc.
+	<br><br>
+	If you want just a bitstring or bytestring, use coretypeLeaf.
+	Its recommended to make subranges of this coretypeHttpBytes's bits viewable as coretypeLeaf
+	andOr the avl list of bits coretypes, or at least the content section (after the first \r\n\r\n)
+	viewable as a separate binary object. I'm undecided on that optimization and datastruct design. 
+	*
+	r_coretypeHttpBytes(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	*/
+	
+	/** tlapp is Torrent Like Acyc (the previous name of occamsfuncer) Part Packet
+	(in mindmap, basically a kind of compression (incomplete design)
+	for merkle forest where can refer to other tlapps or leafs by noncompressed id at some crossSection).
+	*/
+	u_coretypeTlapp(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	/** like mmgMouseai p2p streams, a chunk of data from it or from multiple of them,
+	and part of that being a pointer at the name of the stream which may be any Funcer
+	especially a publickey such as ed25519 but I dont want to hardcode the kind of digsig algorithm here
+	nor to hardcode that its digsig based at all
+	since it could be url based for efficiency or prppfOfWork based.
+	*/
+	v_coretypeReservedForStream(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	/** same 22 bytes after "type:" but changes the type to *hashId. */
+	w_coretypeOptimizedWeakrefId(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	/** Stores any id. For things that *coretypeOptimizedWeakrefId cant hold, such as a weakref to a weakref or to a *localId */
+	x_coretypeGeneralWeakrefId(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	y_coretypeReserved(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	z_coretypeReserved(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	
+	
+	//TODO capital A_ to Z_ also? How about other chars that can go in the type:content of application/x-occamsfuncer-...?
+	
+	/*coretypeReserved28(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	coretypeReserved29(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	coretypeReserved30(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	coretypeReserved31(-1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),
+	*/
 	
 	
 	/*TODO hook learnloop and recurrentjava LSTM, both opencl optimized (todo on recurrentjava),
@@ -87,14 +329,16 @@ public enum Opcode{
 	}),*/
 	
 	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
-	car(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+	car(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		//f(?? ;car aCons)
 		$();
 		return evalInfiniteLoop(); //FIXME
 		//return (Funcer)null; //FIXME
 	}),
 	
 	/** TODO find the exact lambda of this, considering that cons is Lx.Ly.Lz.zxy */
-	cdr(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+	cdr(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		//f(?? ;cdr aCons)
 		$();
 		return evalInfiniteLoop(); //FIXME
 		//return (Funcer)null; //FIXME
@@ -218,11 +462,49 @@ public enum Opcode{
 	lazyEval(3, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		//throw new Error("TODO");
-		return (Funcer)null;
+		
+		throw new Error("TODO use ImportStatic.eval(String,Funcer);");
+		
+		//return (Funcer)null;
 	}),
 	
-	/** TODO "f(?? ;plugin ;pluginName mapParam) including plugin for humanAiNetNeural"
-	is a name in mindmap.
+	/** USE plugin opcode instead.
+	OLD: f(?? ;humanAiNetNeural mapOfParams)
+	call https://github.com/benrayfield/HumanAiNetNeural funcs such as RBM and LSTM,
+	both openCL/GPU optimized. Later hopefully I'll add general OpenCL and javassist optimizations,
+	or at least some kind of forest of opencl calls,
+	for any parallelizable occamsfuncer code, but for now this is an important thing to include.
+	*
+	humanAiNetNeural(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		return nil;
+		
+		todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	}),*/
+	
+	
+	/** Example: f(?? ;plugin ;immutable.occamsfuncer.Plugins.ocfnplugExamplePlusOne 100) evals to 101.
+	aka f(?? ;plugin ;immutable.occamsfuncer.Plugins.ocfnplugExamplePlusOne)#+1
+	and somewhere else in code f(+1 5) evals to 6.
+	The first actually useful plugins might be in HumanAiNetNeural software for RBM and LSTM neuralnets.
+	See comment in Plugin.java for how to make plugins.
+	Theres a bigger cost to first call a plugin then a small extra cost for each call again,
+	but a big enough cost that very small calculations (like sigmoid) should not be done in a plugin,
+	but implementing an indexOf func wouldnt be bottlenecked by that.
+	This is not meant to be where a large library of code is hooked in
+	but instead should be just a few important things needed during development
+	before all plugins are eventually ported to occamsfuncer user level code (which is sandboxed) and
+	there would be no more plugins, and all that would be automatically optimized by opencl and javassist.
+	The plugin opcode will always be available, but occamsfuncerVMs would hopefully
+	eventually be designed to not contain any plugins since they wouldnt be needed
+	and are harder to make secure than occamsfuncer user level code.
+	A plugin always takes 1 param, but it can be a map, avlList, or even a whole operating system.
+	<br><br>
+	OLD...
+	<br><br>
+	I wanted to do f(?? ;pluginName) but theres an optimization that uses Opcode enum,
+	which plugins dont need since they do bigger things and are not bottlenecked
+	by something as small as a map lookup.
 	<br><br>
 	OLD:
 	Example: f(? "plugin" "jstatic:java.lang.System.identityHashCode" l(someObject)))
@@ -258,11 +540,12 @@ public enum Opcode{
 	trusted plugins depending which code you're using.
 	But it would be worse if different implementations had different core ops,
 	so I'm including this plugin op to standardize that.
-	*
-	plugin(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
-		$();
-		throw new Error("TODO");
-	}),*/
+	*/
+	plugin(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$(100);
+		//"f(?? ;plugin ;pluginName param)
+		return Plugins.plugin(L.R().str()).apply(R);
+	}),
 	
 	/** RELATED TO EACHOTHER: CoreType.lazyEval and and Opcode.lazyEval Opcode.triggerLazyEval */
 	triggerLazyEval(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
@@ -386,13 +669,30 @@ public enum Opcode{
 		throw new Error("TODO");
 	}),
 	
-	/** see comment in Weakref.java. This is a function that returns T or F
+	/** see comment in Weakref.java. This is a function that returns T or F (UPDATE: 1 or 0)
 	depending if its param is a certain object (by matching its id to the stored id)
 	and is the recommended way to, if you choose to remove your copy of content after things
-	are built on it (such as responding to "copyright takedown" demands),
+	are built on it (such as responding to "copyright takedown" demands, if a local user chooses to
+	in their cached set of shared data, but it wouldnt remove it from others computers unless they also choose to),
 	prevent errors in the merkle forest.
+	*
+	weakref(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+		$();
+		throw new Error("TODO");
+	}),*/
+	
+	/** See the contenttypethencolonthencontent subtype of application/x-occamsfuncer-fork7128543112795615
+	which lacks the isWeakref part of its header so if you want one to it you use this
+	which less efficiently of memory, has a strongref to the contenttypethencolonthencontent
+	and you can have a normal weakref to a weakrefOfContenttypethencolonthencontent, so its an extra object,
+	compared to normal weakrefs which are just a copy of the id they point at except the isWeakref bit
+	in that id is 0, and in the weakref that bit is 1, so you cant use that for a weakref to point
+	at a weakref, or for it to point at a contenttypethencolonthencontent.
+	If that doesnt cover the kind of weakref you need, you can make one as a function that
+	returns 1 when its param has a certain id, else returns 0, but I'm unsure how that would work
+	with auto loading parts of the merkle forest.
 	*/
-	weakref(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
+	weakrefOfContenttypethencolonthencontent(2, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
 		throw new Error("TODO");
 	}),
@@ -673,7 +973,9 @@ public enum Opcode{
 	/** f(?? "idAsLeaf" getMyId) */
 	idAsLeaf(1, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
-		return R.id().asFuncer();
+		//return R.id().asFuncer();
+		throw new Error("TODO fix id vs ob");
+		//return R.id();
 	}),
 	
 	/** This is replacing the kernel opcode etc. It will instead tell occamsfuncerVM to look for
@@ -825,7 +1127,7 @@ public enum Opcode{
 	*/
 	
 	
-	//public static final int cons = 2;
+	//cons = 2;
 	
 	/*2019-1-6 occamsfuncerChooseToKeepTriconsOrNot QUOTE
 		TODO choose to keep both cons and tricons (and their relevant ops) OR
@@ -1534,23 +1836,10 @@ public enum Opcode{
 	*/
 	mapPair(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
 		$();
-		return nil;
+		//return nil;
 		
-		todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
-	}),
-	
-	/** f(?? ;humanAiNetNeural mapOfParams)
-	call https://github.com/benrayfield/HumanAiNetNeural funcs such as RBM and LSTM,
-	both openCL/GPU optimized. Later hopefully I'll add general OpenCL and javassist optimizations,
-	or at least some kind of forest of opencl calls,
-	for any parallelizable occamsfuncer code, but for now this is an important thing to include.
-	*/
-	humanAiNetNeural(4, (BinaryOperator<Funcer>)(Funcer L, Funcer R)->{
-		$();
-		return nil;
-		
-		todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
-	})
+		throw new Error("todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything");
+	});
 	
 	//TODO bit shift ops on viewing float64 as int32 since it can represent all int32 values,
 	//similar to how javascript has int bitshift ops???
@@ -1561,7 +1850,14 @@ public enum Opcode{
 	/** Its BinaryOperator instead of UnaryOperator cuz Call.java is not created for the last curry */
 	public final BinaryOperator<Funcer> func;
 
-	public final int waitCurries;
+	public final byte waitCurries;
+	
+	public final Call ob;
+	
+	/** an ascii char from a to Z, preceding _ in coretype name or : in type:content as in application/x-occamsfuncer-... */
+	public final byte coretypeByteOrZeroIfNotCoretype;
+	
+	public final boolean isId;
 	
 	//FIXME how does [? "plus"] get optimized to use Op.plus?
 	//public final Op funcer;
@@ -1570,10 +1866,17 @@ public enum Opcode{
 	
 	private Opcode(int waitCurries, BinaryOperator<Funcer> func){
 		this.func = func;
-		this.waitCurries = waitCurries;
+		this.waitCurries = (byte)waitCurries;
+		if(this.waitCurries != waitCurries || waitCurries < 0 || Call.maxCur < waitCurries)
+			throw new Error("waitCurries="+waitCurries);
 		//this.fc = new Funcall(null, null, null, this, 0);
 		//this.funcer = new Op(this);
 		//magic32 = DataUtil.magic32(toString()+"C"+waitCurries);
+		String n = name();
+		this.ob = new Call(Import.instance, wr(n)); //FIXME (TheImportFunc.instance, my enum name wrapped in Funcer)
+		this.coretypeByteOrZeroIfNotCoretype = n.charAt(1)=='_' ? (byte)n.charAt(0) : 0;
+		//TODO or should this be n.endsWith("Id") (*HashId, *WeakrefId, *LocalId)?
+		this.isId = this.ob.contentLen()==Id.sizeInBytes;
 	}
 	
 	/** convenience func to write Op.abc.f(...) instead of Op.abc.fc.f(...) * 
@@ -1616,11 +1919,11 @@ public enum Opcode{
 	This is normally called very few times and cached in Funcall objects
 	(or some wrapper I might call ImportCall which means TheImportFunc called on a param?).
 	*/
-	public static Opcode get(String importName){
+	public static Opcode getOrNull(String importName){
 		try{
 			return Enum.valueOf(Opcode.class, importName);
 		}catch(IllegalArgumentException e){
-			return Opcode.infiniteLoop;
+			return null;
 		}
 	}
 	

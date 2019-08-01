@@ -4,10 +4,13 @@ import static immutable.occamsfuncer.ImportStatic.*;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.funcers.Import;
 import mutable.occamsfuncer.memstat.MemStat;
 
-/*IMPORTANT!!!!!!!!!!!!
+/* OLD...
+<br><br>
+IMPORTANT!!!!!!!!!!!!
 I am going to start using merkleforest soon, today is 2019-4-10 (if can get few parts built).
 What was holding me back is I felt I needed to decide on all the idlits
 (inline data in ids, such as float[5] or float[0] or double[2] or double)
@@ -182,6 +185,44 @@ it has from the int mask/header which is in java memory, and you can ask for exa
 ...
 */
 public interface Funcer<LeafType> extends Comparable<Funcer>{
+//public interface Funcer<LeafType> extends ob<Funcer<LeafType>>{ //TODO extends ob<Funcer<?>>
+
+	/** Every ob is a lambda function.
+	If a type is not a lambda function,
+	such as if content(Outputstream) is "image/jpeg:...bytes of jpg file...",
+	just return the param (TODO or should it be nil?).
+	Other functions can still use it as their param even if it doesnt do anything interesting as a function.
+	*
+	public default T f(T param){ return param; }
+	*/
+
+	public Id id();
+	
+	/*public default boolean isId(){
+		return contentLen() <= 24;
+		//FIXME how to pad with bit0s to 24 bytes if its smaller such as "text/plain:abc"?
+	}*/
+	
+	public int childs();
+	
+	/** 0 <= index < childs() */
+	public Funcer child(int index);
+	
+	/** for merkle hashing into my id, write the content to be hashed.
+	Hash algorithm is the 4 bits described in README.md and the Content-Type CONCAT
+	the last 188 bits of double-SHA256. Or if contentLen()<=24 its used directly as its own id.
+	*/
+	public void content(OutputStream out);
+	
+	/** how many bytes will content(OutputStream) write? Bigger datastructs can be made
+	from combos of these objects, such as occamsfuncer has treemap and treelist.
+	*/
+	public int contentLen();
+	
+	/** The high 1-4 bits are the first 4 header mask bits described in my Content-Type.
+	The other bits might be useful to you if you know the data structure of the subtype.
+	*/
+	public int firstBits();
 	
 	/** This is the ONLY mutable part of Funcer.
 	MUTABLE memory statistics, especially fullEconacyc, zapeconacyc,
@@ -198,6 +239,7 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	*/
 	public MemStat mem();
 	
+	//TODO this function is moving to the immutable.ids_fork* package.
 	public default Funcer f(Funcer param){
 		return HaltingDictator.topIsStrict ? fStrict(param) : fNonstrict(param);
 	}
@@ -233,9 +275,7 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	/** 0-15 dimensions. Everything is 0 dimensional except Leaf (and maybe ListLeafArray?).
 	Example of 4d: wrapper of float[55][99937][20], which has a [32] last dim since float is 32 bits.
 	*/
-	public default int dims(){
-		return Data.howManyDims(firstHeader());
-	}
+	public int dims();
 	
 	/** 0 <= dimIndex() < dims().
 	After firstHeader which is 16 bits, theres multiformatsVarint per dim, then the content which
@@ -244,6 +284,7 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	*/
 	public int dimSize(int dimIndex);
 
+	/*TODO this function is moving to the immutable.ids_fork* package.
 	/** for merkle hashing into my id, write the content to be hashed,
 	just my few local vars, not recursively into other Funcers I can reach but include their ids.
 	If this is an array (such as subclasses of AbstractArray), after header is the whole array
@@ -253,20 +294,23 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	while optimizing things to actually use int[] and float[] such as float[] is best in opencl.
 	<br><br>
 	This is not just the content to hash. Its the content to store as that hash'es value.
-	*/
+	*
 	public void content(OutputStream out);
 	
+	TODO this function is moving to the immutable.ids_fork* package.
 	/** how many bytes will content(OutputStream) write? Bigger maps and lists than fit in int
 	are made of multiple tiny objects, sometimes bigger leafs but never bigger than fits in int.
-	*/
+	*
 	public int contentLen();
+	*/
 	
 	
 	//OLD: often doesnt use the whole int. includes LContext RContext avlBalance etc.
 	/** this is the first 16 bits of header, before the multiformatsVarints and content,
 	as described in Data class comment.
-	*/
+	*
 	public short firstHeader();
+	*/
 	
 	public long maplistSize();
 	
@@ -337,8 +381,8 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 		if(binheapIndex == LDeepIndex()) return LDeep();
 		if(binheapIndex == RDeepIndex()) return RDeep();
 		if(binheapIndex < 1) throw new Error("binheapIndex="+binheapIndex);
-		TODO use expand() and recurse into bh since once expanded it wont expand the same part again
-		and will return a this.
+		//TODO use expand() and recurse into bh since once expanded it wont expand the same part again
+		//and will return a this.
 		
 		
 		/*if(binheapIndex == 1) return this;
@@ -352,8 +396,9 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 		}
 		*/
 		
-		FIXME theres an extra 1 as high bit which this shouldnt be recursing but is correctly part of binheapIndex.
-		FIXME test this with a few recursions
+		//FIXME theres an extra 1 as high bit which this shouldnt be recursing but is correctly part of binheapIndex.
+		//FIXME test this with a few recursions
+		throw new Error("FIXME");
 	}
 	
 	
@@ -406,29 +451,41 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	*/
 	public Opcode leftmostOp();
 	
+	/** which of the Opcode.a_... to Z_... coretypes am I? */
+	public Opcode coretype();
+	
 	/** the "?" in <? "plus" 3 4> which returns 7.
 	In <? "plus"> and <? "plus" 3>, leftmostOp is plus (TODO whats its exact name?)
 	*
 	public default boolean isTheImportFunc(){ return this==TheImportFunc.instance; }
 	*/
 	
-	/** number of curries remaini`ng before eval (max 15). TODO max 14 and use 15 to mean will never eval? */
-	public byte cur();
+	/** number of curries remaining before eval (max 15). TODO max 14 and use 15 to mean will never eval? */
+	public default byte cur(){
+		return coretype().waitCurries;
+	}
 	
-	/** may trigger lazyEval of hashing many Funcers below to get their ids, but will remember Id of each after that */
+	/** may trigger lazyEval of hashing many Funcers below to get their ids, but will remember Id of each after that *
 	public Id id();
+	*/
 	
 	/** Even if this is a weakref, its content still fits in id
 	since its a func that recognizes (returns 1 else 0 if) if its param is
 	that id with the weakref bit 0 (recognizes the non-weakref form of itself).
 	*/
 	public default boolean contentFitsInId(){
-		return (firstHeader()&Data.maskIsHash)!=0;
+		//return (firstHeader()&Data.maskIsHash)!=0;
+		return contentLen() <= 24;
 	}
 	
-	/** Mask.weakrefMask */
 	public default boolean isWeakref(){
-		return (firstHeader()&Data.maskIsWeakref)!=0;
+		Opcode c = coretype();
+		return c==Opcode.w_coretypeOptimizedWeakrefId || c==Opcode.x_coretypeGeneralWeakrefId;
+		//return (firstHeader()&Data.maskIsWeakref)!=0;
+	}
+	
+	public default boolean isWeakrefThatFitsInId(){
+		return coretype()==Opcode.w_coretypeOptimizedWeakrefId;
 	}
 	
 	/** If this Funcer wraps another Funcer and duplicates its every function call,
@@ -590,6 +647,16 @@ public interface Funcer<LeafType> extends Comparable<Funcer>{
 	
 	public default Funcer push(Object value){
 		return push(wr(value));
+	}
+	
+	/** If this is an avlList (including ListLeafSingle and ListLeafArray the avl leafs)
+	then interprets the list contents as chars and returns them as String.
+	TODO will there be charOffset (something like 1<<51) plus charValue to view double as char
+	like in HumanAiNet0.8.0? Also if this is a map whose keys are list indexs,
+	views their values as if it is a list.
+	*/
+	public default String str(){
+		throw new Error("TODO str, this="+this);
 	}
 	
 	/*

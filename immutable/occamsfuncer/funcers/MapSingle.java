@@ -1,7 +1,10 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import static immutable.occamsfuncer.ImportStatic.evalInfiniteLoop;
+
 import java.io.OutputStream;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
@@ -9,12 +12,12 @@ import immutable.occamsfuncer.Opcode;
 
 public class MapSingle extends AbstractFuncer{
 	
-	todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	//todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
 	
 	public final Funcer key, val;
 
 	public MapSingle(Funcer key, Funcer val){
-		super((short)Data.coretypeMapSingle); //all mask bits 0
+		//super((short)Data.coretypeMapSingle); //all mask bits 0
 		this.key = key;
 		this.val = val;
 	}
@@ -28,7 +31,7 @@ public class MapSingle extends AbstractFuncer{
 	}
 	
 	public Funcer expand(){
-		return Opcode.mapSingle.ob.f(1.).f(key).f(val);
+		return Opcode.j_coretypeMapSingle.ob.f(1.).f(key).f(val);
 	}
 
 	public void content(OutputStream out){
@@ -137,6 +140,18 @@ public class MapSingle extends AbstractFuncer{
 
 	public int compareTo(Object o){
 		throw new Error("TODO");
+	}
+	
+	public int childs(){
+		return 2;
+	}
+
+	public Funcer child(int index){
+		switch(index){
+		case 0: return key;
+		case 1: return val;
+		default: return evalInfiniteLoop();
+		}
 	}
 	
 	/*

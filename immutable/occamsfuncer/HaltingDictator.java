@@ -7,7 +7,7 @@ import mutable.occamsfuncer.memstat.MemStat;
 
 /** workaround for lack of halting oracle (which is impossible math to ever exist).
 Every program halts when it runs out of compute resources, recursively limited
-by Spend calls inside Spend calls which can be as deep as the java stack allows
+by Opcode.spend calls inside spend calls which can be as deep as the java stack allows
 without making it significantly slower. Is turingComplete up to that limit
 similar to how npcomplete is what a nondeterminstic turing machine can do in n steps
 and P (polynomial) is what a deterministic turing machine can do in n steps.
@@ -116,45 +116,12 @@ public class HaltingDictator extends RuntimeException{
 	immutable per object and part of its hash, except objects that fit in an id never expire
 	since if ypu point at them you already have a copy. this will do garbcol in realtime in p2p.
 	*/
-	private static long topExpireTime;
+	public static long topExpireTime;
 	
 	//TODO change Opcode.spend to specify a new topExpireTime or dt? Or use a different op?
 	
 	
 	/** nanoseconds since year 1970 UTC */
-	private static long timeNow;
-	
-	/** return this instead of throwing UnsupportedOperationException */
-	public static Funcer evalInfiniteLoop(){
-		//optimization of $(infinity) aka infinite loop, but since all calculations
-		//must be prepaid but in this case lacks the compute resources to do that,
-		//branch to the ELSE of the topmost Spend call.
-		throw throwMe;
-	}
-	
-	//TODO if Wallet.top is private, how will opSpend and opWallet use it?
-	
-	/** pay 1 else throw */
-	public static void $(){
-		topWallet--;
-		if(topWallet == 0){
-			topWallet++;
-			throw throwMe;
-		}
-	}
-	
-	/** UNDECIDED ABOUT... Its callers responsibility for param to be positive.
-	TODO That will be enforced by sandbox only approving code which does that,
-	but not enforced in code outside the system (its their responsibility to know how to use the system correctly).
-	This is not a cryptocurrency, just a local counting and allocating of compute resources. 
-	*/
-	public static void $(long pay){
-		if(pay < 0) throw new Error("pay negative: "+pay); //TODO as optimization should this be callers responsibility?
-		topWallet -= pay;
-		if(topWallet <= 0){
-			topWallet += pay;
-			throw throwMe;
-		}
-	}
+	public static long timeNow;
 
 }

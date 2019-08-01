@@ -1,7 +1,10 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import static immutable.occamsfuncer.ImportStatic.evalInfiniteLoop;
+
 import java.io.OutputStream;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
@@ -15,10 +18,9 @@ public class MapEmpty extends AbstractFuncer{
 	
 	public static final MapEmpty instance = new MapEmpty();
 
-	public MapEmpty(){
-		super((short)Data.coretypeMapEmpty); //all mask bits 0
-		// TODO Auto-generated constructor stub
-	}
+	/*public MapEmpty(){
+		//super((short)Data.coretypeMapEmpty); //all mask bits 0
+	}*/
 
 	public Funcer f(Funcer param){
 		throw new Error("TODO");
@@ -138,6 +140,14 @@ public class MapEmpty extends AbstractFuncer{
 
 	public int compareTo(Object o){
 		throw new Error("TODO");
+	}
+	
+	public int childs(){
+		return 0;
+	}
+
+	public Funcer child(int index){
+		return evalInfiniteLoop();
 	}
 	
 	

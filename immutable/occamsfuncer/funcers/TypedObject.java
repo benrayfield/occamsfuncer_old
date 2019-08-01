@@ -15,7 +15,7 @@ public class TypedObject extends AbstractFuncer{
 	public final Funcer type, val;
 
 	public TypedObject(Funcer type, Funcer val){
-		super((short)Data.coretypeTypedObject); //all mask bits 0
+		//super((short)Data.coretypeTypedObject); //all mask bits 0
 		this.type = type;
 		this.val = val;
 	}

@@ -1,6 +1,9 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.util;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 //import common.Nanotimer;
 
 /** Update 2015-5 changing to bigEndian since thats the way people think and multidimensional arrays are
@@ -97,6 +100,14 @@ public class BitsUtil{
 			g = ((g<<8) | (b[offset+i]&0xff));
 		}
 		return g;
+	}
+	
+	public static void writeLong(long g, OutputStream out){
+		try{
+			for(int shift=56; shift>=0; shift-=8){
+				out.write((byte)(g>>>shift));
+			}
+		}catch(IOException e){ throw new Error(e); }
 	}
 
 }

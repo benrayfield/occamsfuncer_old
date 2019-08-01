@@ -1,7 +1,10 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
+import static immutable.occamsfuncer.ImportStatic.evalInfiniteLoop;
+
 import java.io.OutputStream;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.Id;
@@ -13,9 +16,9 @@ public class ListEmpty extends AbstractFuncer{
 	
 	public static final ListEmpty instance = new ListEmpty();
 	
-	public ListEmpty(){
-		super((short)Data.coretypeAvlListEmpty); //all mask bits 0
-	}
+	/*public ListEmpty(){
+		//super((short)Opcode.coretypeAvlListEmpty.ordinal()); //all mask bits 0
+	}*/
 
 	public Funcer f(Funcer param){
 		throw new Error("TODO");
@@ -135,6 +138,14 @@ public class ListEmpty extends AbstractFuncer{
 
 	public int compareTo(Object o){
 		throw new Error("TODO");
+	}
+	
+	public int childs(){
+		return 0;
+	}
+
+	public Funcer child(int index){
+		return evalInfiniteLoop();
 	}
 	
 	/*public long size(){

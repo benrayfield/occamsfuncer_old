@@ -1,14 +1,19 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
 
+import static immutable.occamsfuncer.ImportStatic.evalInfiniteLoop;
+
+import java.io.IOException;
 import java.io.OutputStream;
 
+import immutable.ids_fork7128543112795615.ob;
 import immutable.occamsfuncer.Data;
 import immutable.occamsfuncer.Funcer;
 import immutable.occamsfuncer.HaltingDictator;
 import immutable.occamsfuncer.Id;
 import immutable.occamsfuncer.ImportStatic;
 import immutable.occamsfuncer.Opcode;
+import immutable.util.BitsUtil;
 
 /** treemap that lazyEvalHashes to same id for same set of key/value pairs
 regardless of order of adds and removes. Trigges lazyEvalHash of keys but not values.
@@ -23,7 +28,6 @@ public class MapPair extends AbstractCollectionPair{
 	
 	public MapPair(Funcer minChild, Funcer maxChild){
 		super(
-			(short)Data.coretypeMapPair, //all mask bits 0
 			minChild.maplistSize()+maxChild.maplistSize(),
 			minChild,
 			maxChild
@@ -35,7 +39,7 @@ public class MapPair extends AbstractCollectionPair{
 	}
 	
 	public Funcer expand(){
-		return Opcode.mapPair.ob.f(maplistSize).f(minKey).f(maxKey).f(LDeep).f(RDeep);
+		return Opcode.m_coretypeMapPair.ob.f(maplistSize).f(minKey).f(maxKey).f(LDeep).f(RDeep);
 	}
 	
 	/** occamsfuncerRedesignToMakeSLinkedListEtcConsistentAndUrbitlike */
@@ -150,14 +154,37 @@ public class MapPair extends AbstractCollectionPair{
 	}
 
 	public void content(OutputStream out){
-		throw new Error("TODO");
+		try{
+			out.write(coretype().coretypeByteOrZeroIfNotCoretype);
+			out.write(':');
+		}catch(IOException e){ throw new Error(e); }
+		//f(?? ;mapPair size minKey maxKey minChild maxChild)
+		BitsUtil.writeLong(maplistSize, out);
+		minKey.id().content(out);
+		maxKey.id().content(out);
+		LDeep.id().content(out); //minChild
+		RDeep.id().content(out); //maxChild
 	}
 
 	public int contentLen(){
 		throw new Error("TODO");
 	}
 	
-	todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
+	public int childs(){
+		return 4;
+	}
+
+	public Funcer child(int index){
+		switch(index){
+		case 0: return minKey;
+		case 1: return maxKey;
+		case 2: return LDeep;
+		case 3: return RDeep;
+		default: return evalInfiniteLoop();
+		}
+	}
+	
+	/*todo mapAndListReturnValWhenCalledOnKeyAndLeafReturnsItselfWhenCalledOnAnything
 	
 	
 	TODO do this in MapPair, MapSingle, AvlTreelistPair, listsingle, etc...
@@ -177,6 +204,6 @@ public class MapPair extends AbstractCollectionPair{
 			tree at once (which those datastructs cache).
 			UNQUOTE.
 			UNQUOTE.
-
+	*/
 
 }

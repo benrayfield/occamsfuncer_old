@@ -20,8 +20,8 @@ public final class Num implements Funcer<Double>{
 	
 	private MemStat mem;
 	
-	public static final short firstHeaderOfNum =
-		(short)(Data.maskIsScalar | Data.maskIsSigned | Data.coretypeLeaf);
+	//public static final short firstHeaderOfNum =
+	//	(short)(Data.maskIsScalar | Data.maskIsSigned | Data.coretypeLeaf);
 	
 	public Num(double val){
 		this.val = val;
@@ -55,9 +55,9 @@ public final class Num implements Funcer<Double>{
 		return id().hashCode();
 	}
 
-	public short firstHeader(){
+	/*public short firstHeader(){
 		return firstHeaderOfNum;
-	}
+	}*/
 
 	public long maplistSize(){
 		return 0;
@@ -171,6 +171,11 @@ public final class Num implements Funcer<Double>{
 
 	public int contentLen(){
 		throw new Error("TODO");
+	}
+	
+	/** Num is an optimization of Leaf of bit[64] which isScalar, isSigned, etc, aka a double */
+	public int dims(){
+		return 1;
 	}
 
 	public int dimSize(int dimIndex){

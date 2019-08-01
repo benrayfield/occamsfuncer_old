@@ -1,6 +1,6 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
-import static immutable.occamsfuncer.ImportStatic.nil;
+import static immutable.occamsfuncer.ImportStatic.*;
 
 import java.io.OutputStream;
 
@@ -19,7 +19,7 @@ public class Import implements Funcer{
 	
 	public final MemStat mem = HaltingDictator.newMemStat();
 	
-	public static final short firstHeaderOfImport = (short)(Data.coretypeImport); //all mask bits 0
+	//public static final short firstHeaderOfImport = (short)(Data.coretypeImport); //all mask bits 0
 	
 	private Import(){}
 	
@@ -75,33 +75,34 @@ public class Import implements Funcer{
 	}
 
 	public Funcer<Double> setSalt(Funcer salt){
-		return HaltingDictator.evalInfiniteLoop();
+		return evalInfiniteLoop();
 	}
 
 	public Funcer minKey(){
-		return HaltingDictator.evalInfiniteLoop();
+		return evalInfiniteLoop();
 	}
 
 	public Funcer maxKey(){
-		return HaltingDictator.evalInfiniteLoop();
+		return evalInfiniteLoop();
 	}
 
 	public Object v(){
-		return HaltingDictator.evalInfiniteLoop(); //FIXME return nil?
+		return evalInfiniteLoop(); //FIXME return nil?
 	}
 
 	public Opcode leftmostOp(){
-		return Opcode.data;
+		return Opcode.a_coretypeImport;
 	}
 
-	public boolean isTheImportFunc(){
+	/*public boolean isTheImportFunc(){
 		return false;
-	}
+	}*/
 
-	/** calling me with any param returns me */
+	/** calling me with any param returns me *
 	public byte cur(){
+		FIXME shouldnt this be done in Opcode? except maybe in Call its different number of curries than Opcode.
 		return 1;
-	}
+	}*/
 
 	public Id id(){ return id; }
 

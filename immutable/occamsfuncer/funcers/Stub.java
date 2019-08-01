@@ -44,9 +44,9 @@ public class Stub<LeafType> implements Funcer<LeafType>{
 		return unstub.get();
 	}
 
-	public short firstHeader(){
+	/*public short firstHeader(){
 		return unstub().firstHeader();
-	}
+	}*/
 
 	public long maplistSize(){
 		return unstub().maplistSize();

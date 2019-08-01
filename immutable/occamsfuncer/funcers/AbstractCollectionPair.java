@@ -8,8 +8,20 @@ public abstract class AbstractCollectionPair extends AbstractFuncer{
 	
 	public final Funcer LDeep, RDeep;
 	
-	public AbstractCollectionPair(short firstHeader, long maplistSize, Funcer minChild, Funcer maxChild){
-		super(firstHeader);
+	public AbstractCollectionPair(long maplistSize, Funcer minChild, Funcer maxChild){
+		/*FIXME no more firstHeader except in Leaf (including Num, as abstract math)
+		Theres no more firstHeader at all in Funcer.firstHeader(). Dont take it in constructor.
+		All you need to know in most Funcer is whats their type letter, and each class only has
+		1 of those, so just remove the param.
+		This is part of application/x-occamsfuncer-..., especially the newer part where
+		every data is type:value. In the case of MapPair, value is binary of 4 ids and a long size.
+		Create a new function similar to Funcer.leftmostOp(), which in many cases equals leftmostOp
+		(TODO find counterexamples)... It tells what coretype this object is.
+		Remember bh(int) and LDeepIndex and LDeep and L etc.
+		*/
+		
+		
+		//super(firstHeader);
 		this.maplistSize = maplistSize;
 		this.LDeep = minChild;
 		this.RDeep = maxChild;

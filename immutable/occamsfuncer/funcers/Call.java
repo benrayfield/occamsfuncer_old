@@ -1,6 +1,6 @@
 /** Ben F Rayfield offers this software opensource MIT license */
 package immutable.occamsfuncer.funcers;
-
+import static immutable.occamsfuncer.ImportStatic.*;
 import java.io.OutputStream;
 
 import immutable.occamsfuncer.CacheFuncParamReturn;
@@ -103,24 +103,25 @@ public class Call extends AbstractFuncer{
 	(its infinitely slow if you dont know how to do it ever)
 	and if nonstrictMode then also float roundoff and order of parallel multiplies adds etc.
 	*/
-	public Call(Funcer x, Funcer y){
-		super((short)Data.coretypeCall); //got rid of the S coretypes so theres only 1 Call type
+	public Call(Funcer func, Funcer param){
+		//FIXME Data.coretype* has been moved to Opcode
+		//super((short)Opcode.coretypeCall.ordinal()); //got rid of the S coretypes so theres only 1 Call type
 		//super((short)coretype); FI XME coretype varies cuz this class can be SCall
-		if(x == Import.instance){
+		if(func == Import.instance){
 			//This rarely happens compared to the ELSE
 			//cuz once you have such a func its normally reused many times.
-			Opcode op = Opcode.getOrNull(y);
-			if(op == null) HaltingDictator.evalInfiniteLoop(); //see comment of Opcode.getOrNull(Funcer)
+			Opcode op = Opcode.getOrNull(param);
+			if(op == null) evalInfiniteLoop(); //see comment of Opcode.getOrNull(Funcer)
 			leftmostOp = op;
 			cur = (byte)(op.waitCurries-1); //f(?? y) aka f(TheImportFunc y) has y as its first curry
 		}else{
-			leftmostOp = x.leftmostOp();
-			cur = (byte)(x.cur()-1);
+			leftmostOp = func.leftmostOp();
+			cur = (byte)(func.cur()-1);
 			//cur must be positive since Call is not created for the last curry,
 			//instead is run in f(Funcer), fStrict(Funcer), and CacheFuncParamReturn.
 		}
-		this.x = x;
-		this.y = y;
+		this.x = func;
+		this.y = param;
 	}
 	
 	/*ocfnRedesignToHaveOnly1CallTypeNoSCallSLinkedListNodeEtcTypes QUOTE
